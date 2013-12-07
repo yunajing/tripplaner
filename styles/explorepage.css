@@ -1,0 +1,28 @@
+.venueBlock .venueIcon{float:left;height:32px;line-height:0;position:relative;width:42px;}.venueBlock .venueIcon .venueIndex{background:#e3e3e3;background:rgba(196, 195, 188, 0.4);border-top:2px solid #c4c3bc;color:#666666;cursor:default;display:block;font-size:10px;font-weight:bold;left:0;line-height:16px;position:absolute;text-align:center;top:30px;width:32px;-moz-border-radius:0px 0px 2px 2px;-webkit-border-radius:0px 0px 2px 2px;border-radius:0px 0px 2px 2px;}
+.venueBlock .venueDetails{float:left;line-height:16px;
+width:418px;  background:#fff;
+	margin-bottom:10px;
+	padding:10px;
+	position:relative;
+	width:460px;
+	-moz-box-shadow:rgba(0, 0, 0, 0.4) 0 1px 3px 0px;
+	-webkit-box-shadow:rgba(0, 0, 0, 0.4) 0 1px 3px 0px;
+	box-shadow:rgba(0, 0, 0, 0.4) 0 1px 3px 0px;
+	-moz-border-radius:3px;
+	-webkit-border-radius:3px;
+	border-radius:3px;
+	margin-right:110px;
+}.venueBlock .venueDetails .venueName{font-weight:bold;}
+.venueBlock .venueDetails .promoted .promotedIcon{height:15px;position:relative;top:3px;width:15px;}
+.venueBlock .venueDetails .promoted .text{color:#f9b512;}
+.venueBlock .venueDetails .venueScore{float:left;margin-right:5px;position:relative;top:3px;}
+.venueBlock .venueDetails .venueAddressData{float:left;min-height:32px;width:270px;}
+.venueBlock .venueDetails .venueAddress{color:#666666;font-size:11px;}
+.venueBlock .venueDetails .venueData{color:#666666;font-size:10px;font-weight:bold;margin-top:-2px;}.venueBlock .venueDetails .venueData .venueDataItem:last-child .delim{display:none;}
+.venueBlock .venueDetails .venueData .hereNow{padding-left:13px;position:relative;}.venueBlock .venueDetails .venueData .hereNow img{left:0;position:absolute;top:0;}
+.venueBlock .venueDetails .venueData .categoryName:hover,.venueBlock .venueDetails .venueData .linkToEditor:hover{cursor:pointer;text-decoration:underline;}
+.venueBlock .venueDetails .venueData .price{color:#999999;}
+.venueBlock .venueDetails .venueData .darken{color:#666666;}
+.venueBlock .venueDetails .venueData .delim{color:#ccc;padding:0 2px;}
+.venueBlock .venueDetails .venueData .distanceValue{cursor:pointer;}
+.venueBlock .venueDetails .venueData .linkToTips a,.venueBlock .venueDetails .venueData .linkToMenu a,.venueBlock .venueDetails .venueData .linkToTips .link,.venueBlock .venueDetails .venueData .linkToMenu .link{color:#666666;}
