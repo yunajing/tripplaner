@@ -402,20 +402,24 @@
                     }
                 }
         )
-        for (j=0;j<newTab['event'].length;j++){
-                var currentEvent = newTab['event'][j];
+        var counter = 0;
+        for (var j=0;j<newTab['event'].length;j++){
+                var currentEvent = newTab['event'][counter];
+                console.log("aa");
+                console.log(counter);
                 var fTime = currentEvent['fromHour']/1 + currentEvent['fromMinute']/60;
                 var tTime = currentEvent['toHour']/1 + currentEvent['toMinute']/60;
-                var eventId = "-"+j;
+                var eventId = "-"+counter;
                 var placeUrl = currentEvent['placeURL'];
                 var placeName = currentEvent['placeName'];
                 console.log("Event Loaded");
                 console.log(currentEvent);
+                console.log(eventId);
                 var t = (tTime-fTime)*26-2;
                 var slot = document.getElementById(tempid).getElementsByTagName('div').item(1);
                 var top = 6+26*fTime;
                 $(slot).append('<div id="delete-'+eventId+'" class="event_div" style="top:'+top+'px;height:'+t+'px"></div>');
-                console.log(currentEvent['placeURl']);
+                //console.log(currentEvent['placeURl']);
                 $("#delete-"+eventId).append('<a href="'+placeUrl+'" target="_blank">'+placeName+'</a>');
                 $("#delete-"+eventId).append("<p>"+currentEvent['comment']+"</p>");
                 $("#delete-"+eventId).draggable({
@@ -425,6 +429,7 @@
                     helper: "clone",
                     cursor: "move"
                 });
+                counter+=1;
         }
     }
 </script>
@@ -468,7 +473,7 @@
                         class="icon-bar"></span> <span class="icon-bar"></span> <span
                         class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="ui_project.html">Trip Planer</a>
+                <a class="navbar-brand" href="advanced_calender.html">Trip Planer</a>
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">

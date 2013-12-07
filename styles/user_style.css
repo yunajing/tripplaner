@@ -89,6 +89,7 @@
 	word-break:normal;
 	background-color: #0080FF;
 	overflow: scroll;
+	overflow-x: hidden;
 }
 .help{
 	border: 1px solid black;
