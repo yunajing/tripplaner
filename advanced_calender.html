@@ -51,31 +51,74 @@
   var vid;
   var tabCounter=0;
   var calenderList;
+  var thisui;
   var unsavedCalenders={"Calenders":[]};
   var calendertemplate = '<div class="calendertime"><p>0:00 to 1:00</p><p>1:00 to 2:00</p><p>2:00 to 3:00</p><p>3:00 to 4:00</p><p>4:00 to 5:00</p><p>5:00 to 6:00</p><p>6:00 to 7:00</p><p>7:00 to 8:00</p><p>8:00 to 9:00</p><p>9:00 to 10:00</p><p>10:00 to 11:00</p><p>11:00 to 12:00</p><p>12:00 to 13:00</p><p>13:00 to 14:00</p><p>14:00 to 15:00</p><p>15:00 to 16:00</p><p>16:00 to 17:00</p><p>17:00 to 18:00</p><p>18:00 to 19:00</p><p>19:00 to 20:00</p><p>21:00 to 22:00</p><p>22:00 to 23:00</p><p>23:00 to 24:00</p></div><div class="calenderSlots"><div class="drag_div ui-droppable"></div><div class="drag_div ui-droppable"></div><div class="drag_div ui-droppable"></div><div class="drag_div ui-droppable"></div><div class="drag_div ui-droppable"></div><div class="drag_div ui-droppable"></div><div class="drag_div ui-droppable"></div><div class="drag_div ui-droppable"></div><div class="drag_div ui-droppable"></div><div class="drag_div ui-droppable"></div><div class="drag_div ui-droppable"></div><div class="drag_div ui-droppable"></div><div class="drag_div ui-droppable"></div><div class="drag_div ui-droppable"></div><div class="drag_div ui-droppable"></div><div class="drag_div ui-droppable"></div><div class="drag_div ui-droppable"></div><div class="drag_div ui-droppable"></div><div class="drag_div ui-droppable"></div><div class="drag_div ui-droppable"></div><div class="drag_div ui-droppable"></div><div class="drag_div ui-droppable"></div><div class="drag_div ui-droppable"></div></div></div>';
   $(function() {
+    $( document ).tooltip();
     $( "#delete" ).droppable({
       drop: function( event, ui ) {
-        deleteItem(ui.draggable);
+        thisui = ui;
+        $( "#delete-confirm" ).dialog("open");
+      }
+    });
+
+    $( "#delete-confirm" ).dialog({
+      resizable: false,
+      autoOpen: false,
+      height:140,
+      modal: true,
+      buttons: {
+        "Delete all items": function() {
+          deleteItem(thisui.draggable);
+          $( this ).dialog( "close" );
+        },
+        Cancel: function() {
+          $( this ).dialog( "close" );
+        }
       }
     });
   });
   function deleteItem( $item ) {
       $item.fadeOut();
       var itemid = $item.attr('id');
-      if (itemid.substr(0,3)=="tag"){
+      console.log("Judging if deleted item is tag "+$item.attr('aria-controls'));
+      console.log("Item being deleted is "+$item.attr('id'));
+      if ($item.attr('aria-controls')!=null){
         var panelId = $item.remove().attr( "aria-controls" );
         console.log(panelId);
-        $( "#" + panelId ).remove();
+        $("#"+panelId).fadeOut();
         $("#tabs").tabs( "refresh" );
+        for (var i=0;i<calenderList["Calenders"].length;i++){
+          if (calenderList["Calenders"][i] == itemid){
+            calenderList["Calenders"].splice(i,1);
+            break;
+          }
+        }
+        localStorage.removeItem("Calenders");
+        localStorage.setItem("Calenders",JSON.stringify(calenderList));
+        $("#tabs").tabs("refresh");
       }
   }
 
+  function getObjects(obj, key, val) {
+    var objects = [];
+    for (var i in obj) {
+        if (!obj.hasOwnProperty(i)) continue;
+        if (typeof obj[i] == 'object') {
+            objects = objects.concat(getObjects(obj[i], key, val));
+        } else if (i == key && obj[key] == val) {
+            objects.push(obj);
+        }
+    }
+    return objects;
+}
+
   $(function() {
     var tabTitle = $( "#tab_title" );
-      tabDate = $( "#tab_date" );
+      tabDate = $( "#datepicker" );
       tabTemplate = "<li><a href='#{href}'>#{label}</a> <span class='ui-icon ui-icon-close' role='presentation'>Remove Tab</span></li>";
- 
+    tabDate.datepicker();
     // Create new calender dialog init
     var dialog = $( "#createCalendar" ).dialog({
       autoOpen: false,
@@ -83,7 +126,6 @@
       buttons: {
         Add: function() {
           addTab();
-          $( this ).dialog( "close" );
         },
         Cancel: function() {
           $( this ).dialog( "close" );
@@ -103,22 +145,32 @@
  
     // actual addTab function: adds new tab using the input from the form above
     function addTab() {
-        tabCounter+=1;
-        var label = tabTitle.val() || "newSchedule-" + tabCounter;
-        var newTab = {"name":"", "time":"", "event":[]};
+        var bValid = true;
+        bValid = bValid && checkLength(tabTitle,"schedule name",1,8);
+        bValid = bValid && checkRegexp(tabTitle,/^[a-z]([0-9a-z_])+$/i,"Schedule name illegal");
+        var tester = getObjects(calenderList,tabTitle);
+        if (tester.length != 0) {
+          bValid = false;
+          updateTips("Schedule name already exist.");
+        }
+        console.log("New Schedule name is "+tabTitle.val()+" Validation of this name is "+bValid);
+        if (bValid){
+        var label = tabTitle.val();
+        var date = tabDate.val();
+        console.log("New Schedule called "+label+". Selected date is "+date);
+        var newTab = {"name":label, "time":date, "event":[]};
         unsavedCalenders['Calenders'].push(newTab);
-        console.log(unsavedCalenders);
-        id = "tag-" + tabCounter;
+        //console.log(unsavedCalenders);
         $('#schedule').append(
-                            '<li id="'+id+'"><a href="#tabs-'+tabCounter+'">'+label+'</a></li>');
+                            '<li id="'+label+'"><a href="#tabs-'+label+'">'+label+'</a></li>');
         $("li",$("#schedule")).draggable({
                 cancel: "a.ui-icon", // clicking an icon won't initiate dragging
                 revert: "invalid", // when not dropped, the item will revert back to its initial position
                 containment: "document",
                 helper: "clone",
         });
-        var tabid = "#tabs-" + tabCounter;
-        tabpanel='<div id="tabs-'+tabCounter+'">'+calendertemplate;
+        var tabid = "#tabs-" + label;
+        tabpanel='<div id="tabs-'+label+'">'+calendertemplate;
         $("#tabs").append(tabpanel);
         $(tabid).droppable(
                     {
@@ -128,9 +180,9 @@
                                 var draggedid = $(ui.draggable).attr('id');
                                 var element = document.getElementById(draggedid).getElementsByTagName("a").item(0)
                                 clone = element.cloneNode();
-                                console.log($(this).attr('id'));
+                                //console.log($(this).attr('id'));
                                 vid= $(this).attr('id');
-                                console.log(vid);
+                                //console.log(vid);
                                 $( "#dialog-form" ).dialog( "open" );
                                 $( "#calenderName").html('<p id= "calenderName" class="validateTips">Adding to Schedule:'+vid.substr(0,vid.length-4)+'</p>');
                                 document.getElementById('body').style.overflow="hidden";
@@ -139,6 +191,8 @@
                 }
         )
         $("#tabs").tabs( "refresh" );
+        $( "#createCalendar" ).dialog("close");
+      }
     }
  
     // addTab button: just opens the dialog
@@ -146,6 +200,8 @@
       .button()
       .click(function() {
         dialog.dialog( "open" );
+        $( ".validateTips" )
+                .text("")
       });
 
     $("#create").removeClass("ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only");
@@ -156,7 +212,7 @@
         place = $("#place");
         placeVal = place.val() || "Chicago,IL";
         var keyword = $("#keyword").val() || "High";
-        console.log(placeVal+" "+keyword);
+        //console.log(placeVal+" "+keyword);
         search(placeVal,keyword);
       });
     $("#search").removeClass("ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only");
@@ -164,21 +220,25 @@
     $( "#save" )
       .button()
       .click(function() {
+        console.log(unsavedCalenders);
         tabs = $("#tabs");
         var panelId = tabs.find(".ui-tabs-active").attr("aria-controls");
-        console.log(panelId);
-        var temp = panelId.substr(panelId.length-1,panelId.length);
-        calenderList['Calenders'].push("tab-"+temp);
+        console.log("You are trying to save schedule "+panelId);
+        console.log("The active tab is "+tabs.find(".ui-tabs-active").attr('id'));
+        calenderList['Calenders'].push(tabs.find(".ui-tabs-active").attr('id'));
         localStorage.setItem('Calenders',JSON.stringify(calenderList));
-        localStorage.setItem("tab-"+temp,JSON.stringify(unsavedCalenders["Calenders"][temp]));
+        var temp = getObjects(unsavedCalenders["Calenders"],"name",tabs.find(".ui-tabs-active").attr('id'));
+        if (temp.length >=1){
+        localStorage.setItem(tabs.find(".ui-tabs-active").attr('id'),JSON.stringify(temp[0]));
+        console.log("Schedule saved");
+        console.log(unsavedCalenders);
+      }
         //localStorage.setItem('tabs',document.getElementById(panelId).innerHTML);
       });
     $("#save").removeClass("ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only");
-  });
 
 
-//Adding event to the calender
-  $(function() {
+// //Adding event to the calender
       fromHour= $( "#fromHour" ),
       fromMinute = $("#fromMinute"),
       toHour = $( "#toHour" ),
@@ -187,12 +247,12 @@
       allFields = $( [] ).add( fromHour).add( fromMinute).add( toHour).add( toMinute).add( comment ),
       tips = $( ".validateTips" );
 
-        function updateTips( t ) {
-              tips
+      function updateTips( t ) {
+              $( ".validateTips" )
                 .text( t )
                 .addClass( "ui-state-highlight" );
               setTimeout(function() {
-                tips.removeClass( "ui-state-highlight", 1500 );
+                 $( ".validateTips" ).removeClass( "ui-state-highlight", 1500 );
               }, 500 );
         }
  
@@ -203,7 +263,18 @@
     function checkRegexp( o, regexp, n ) {
       if ( !( regexp.test( o.val() ) ) ) {
         o.addClass( "ui-state-error" );
-        updateTips( n );
+        updateTips(n);
+        return false;
+      } else {
+        return true;
+      }
+    }
+
+    function checkLength( o, n, min, max ) {
+      if ( o.val().length > max || o.val().length < min ) {
+        o.addClass( "ui-state-error" );
+        updateTips( "Length of " + n + " must be between " +
+          min + " and " + max + "." );
         return false;
       } else {
         return true;
@@ -238,16 +309,19 @@
                 updateTips("Eding Time is prior to Starting Time");
             }
             if (bValid) {
-                console.log(clone.href);
                 var newEvent = {"fromHour": fromHour.val(), "fromMinute": fromMinute.val(), "toHour": toHour.val(), "toMinute": toMinute.val(), "comment":comment.val(),"placeURL":clone.href,"placeName":clone.innerHTML};
-                var temp = vid.substr(vid.length-1,vid.length);
-                unsavedCalenders['Calenders'][temp]['event'].push(newEvent);
-                var eventId = "tabs-"+unsavedCalenders['Calenders'][temp]['event'].length;
-                console.log("Event Added");
-                console.log(unsavedCalenders);
-                localStorage.setItem("event",JSON.stringify(newEvent));
-                var tester = localStorage.getItem("event");
-                console.log(tester['fromHour']);
+                var vid = $("#tabs").find(".ui-tabs-active").attr("aria-controls");
+                console.log("You are now adding to schedule "+vid);
+                var a = getObjects(unsavedCalenders["Calenders"],"name",$("#tabs").find(".ui-tabs-active").attr("id"));
+                var tempLength = 0;
+                if (a.length >= 1) {
+                  a[0]["event"].push(newEvent);
+                  tempLength = a[0].length;
+                  console.log("Event added! Updated list shown below");
+                  console.log(unsavedCalenders);
+                }
+                var eventId = vid+"-"+tempLength;
+                console.log("Your new event's id is "+eventId);
                 var t = (tTime-fTime)*26-2;
                 var slot = document.getElementById(vid).getElementsByTagName('div').item(1);
                 var top = 6+26*fTime;
@@ -341,6 +415,10 @@
                         })
     }
     function onLoadEvent() {
+        $("#tabs").tabs().addClass("ui-tabs-vertical ui-helper-clearfix");
+        $("#tabs li").removeClass("ui-corner-top").addClass("ui-corner-left");
+        console.log("Loading");
+        console.log("Calender in storage"+localStorage.getItem("Calenders"));
         if (localStorage.getItem("Calenders")==null){
             calenderList = {"Calenders":[],};
             localStorage.setItem("Calenders",JSON.stringify(calenderList));
@@ -348,54 +426,54 @@
         else {
             calenderList = JSON.parse(localStorage.getItem("Calenders"));
         }
+        console.log("You have "+calenderList['Calenders'].length+" schedules in storage");
         if (calenderList['Calenders'].length==0){
-            var newTab = {"name":"", "time":"", "event":[]};
-            unsavedCalenders['Calenders'].push(newTab);
-            drawTab(newTab,0);
-            tabCounter+=1;
+            $( "#createCalendar" ).dialog("open");
+            updateTips("You have no calenders right now. Creat one?");
+            console.log("Creating new schedule for you");
         }
         else {
             for(i=0;i<calenderList['Calenders'].length;i++){
+                console.log("Loading schedule No."+i+" Called "+calenderList['Calenders'][i]);
                 var newTab = JSON.parse(localStorage.getItem(calenderList['Calenders'][i]));
                 unsavedCalenders['Calenders'].push(newTab);
-                drawTab(newTab,i);
+                drawTab(newTab,calenderList['Calenders'][i]);
                 tabCounter+=1;
             }
         }
-        console.log(calenderList);
-        var place = 'Chicago,IL';
-        var keyword = 'high end';
-        tabCounter = localStorage.getItem("tabCounter");
-        $("#tabs").tabs().addClass("ui-tabs-vertical ui-helper-clearfix");
-        $("#tabs li").removeClass("ui-corner-top").addClass("ui-corner-left");
     }
 
-    function drawTab(newTab,i) {
+    function updateTips( t ) {
+              $( ".validateTips" )
+                .text( t )
+                .addClass( "ui-state-highlight" );
+              setTimeout(function() {
+                tips.removeClass( "ui-state-highlight", 1500 );
+              }, 500 );
+    }
+
+    function drawTab(newTab,tabid) {
+        console.log("Drawing schedule event for schedule "+tabid);
+        console.log("Current schedule is "+localStorage.getItem(calenderList['Calenders'][i]));
         var label = newTab['name']||"newSchedule-"+i,
-        id = "tag-" + i;
+        id = "tag-"+i;
         $('#schedule').append(
-                            '<li id="'+id+'"><a href="#tabs-'+i+'">'+label+'</a></li>');
+                            '<li id="'+tabid+'"><a href="#tabs-'+tabid+'">'+label+'</a></li>');
         $("li",$("#schedule")).draggable({
                 cancel: "a.ui-icon", // clicking an icon won't initiate dragging
                 revert: "invalid", // when not dropped, the item will revert back to its initial position
                 containment: "document",
-                helper: "clone",
         });
-        var tabid = "#tabs-" + i;
-        var tempid = "tabs-"+i;
-        console.log("tabid");
-        tabpanel='<div id="tabs-'+i+'">'+calendertemplate;
+        tabpanel='<div id="tabs-'+tabid+'">'+calendertemplate;
         $("#tabs").append(tabpanel);
-        $(tabid).droppable(
+        $("#tabs-"+tabid).droppable(
                     {
                         accept: "div",
                         drop: function( event, ui ) {
                                 var draggedid = $(ui.draggable).attr('id');
                                 var element = document.getElementById(draggedid).getElementsByTagName("a").item(0)
                                 clone = element.cloneNode();
-                                console.log($(this).attr('id'));
                                 vid= $(this).attr('id');
-                                console.log(vid);
                                 $( "#dialog-form" ).dialog( "open" );
                                 $( "#calenderName").html('<p id= "calenderName" class="validateTips">Adding to Schedule:'+vid.substr(0,vid.length-4)+'</p>');
                                 document.getElementById('body').style.overflow="hidden";
@@ -405,18 +483,13 @@
         var counter = 0;
         for (var j=0;j<newTab['event'].length;j++){
                 var currentEvent = newTab['event'][counter];
-                console.log("aa");
-                console.log(counter);
                 var fTime = currentEvent['fromHour']/1 + currentEvent['fromMinute']/60;
                 var tTime = currentEvent['toHour']/1 + currentEvent['toMinute']/60;
-                var eventId = "-"+counter;
+                var eventId = tabid+"-"+j;
                 var placeUrl = currentEvent['placeURL'];
                 var placeName = currentEvent['placeName'];
-                console.log("Event Loaded");
-                console.log(currentEvent);
-                console.log(eventId);
                 var t = (tTime-fTime)*26-2;
-                var slot = document.getElementById(tempid).getElementsByTagName('div').item(1);
+                var slot = document.getElementById("tabs-"+tabid).getElementsByTagName('div').item(1);
                 var top = 6+26*fTime;
                 $(slot).append('<div id="delete-'+eventId+'" class="event_div" style="top:'+top+'px;height:'+t+'px"></div>');
                 //console.log(currentEvent['placeURl']);
@@ -431,24 +504,28 @@
                 });
                 counter+=1;
         }
+        $("#tabs").tabs("refresh");
     }
 </script>
 </head>
 <body id="body" onload="onLoadEvent()">
     <!-- Fixed navbar -->
+      <div id="delete-confirm" title="Empty the recycle bin?">
+        <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>These items will be permanently deleted and cannot be recovered. Are you sure?</p>
+      </div>
       <div id="dialog-form" title="Create new user">
         <div id="calenderName"></div>
         <p class="validateTips">All form fields are required.</p>
         <form>
           <fieldset>
-            <label for="name">From Hour:</label>
-            <input type="text" name="fromHour" id="fromHour" class="text ui-widget-content ui-corner-all">
-            <label for="name">From Minute:</label>
-            <input type="text" name="fromMinute" id="fromMinute" class="text ui-widget-content ui-corner-all">
+            <label for="name">From:</label>
+            <input type="text" name="fromHour" id="fromHour" class="text ui-widget-content ui-corner-all" style="width:30%;display:inline-block">
+            <span style="width:5%"> : </span>
+            <input type="text" name="fromMinute" id="fromMinute" class="text ui-widget-content ui-corner-all" style="width:30%;display:inline-block">
             <label for="email">To Hour:</label>
-            <input type="text" name="toHour" id="toHour" class="text ui-widget-content ui-corner-all">
-            <label for="email">To Minute:</label>
-            <input type="text" name="toMinute" id="toMinute" class="text ui-widget-content ui-corner-all">
+            <input type="text" name="toHour" id="toHour" class="text ui-widget-content ui-corner-all" style="width:30%;display:inline-block">
+            <span tyle="width:5%">:</span>
+            <input type="text" name="toMinute" id="toMinute" class="text ui-widget-content ui-corner-all" style="width:30%;display:inline-block">
             <label for="password">Comments:</label>
             <input type="text" name="comment" id="comment" value="" class="text ui-widget-content ui-corner-all">
           </fieldset>
@@ -457,10 +534,12 @@
       <div id="createCalendar" title="Tab data">
           <form>
             <fieldset class="ui-helper-reset">
+              <p class="validateTips"> </p>
+              <p>Choose date by clicking the input area</p>
               <label for="tab_title">Title</label>
-              <input type="text" name="tab_title" id="tab_title" value="" class="ui-widget-content ui-corner-all">
+              <input type="text" name="tab_title" id="tab_title" value="" class="ui-widget-content ui-corner-all" title="Schedule name may consist of a-z, 0-9, underscores, begin with a letter, within length of 1 to 8">
               <label for="tab_date">Date</label>
-              <textarea name="tab_content" id="tab_content" class="ui-widget-content ui-corner-all"></textarea>
+              <input type="text" name="datepicker" readonly="true" onmousedown="return true" id="datepicker" class="ui-widget-content ui-corner-all">
             </fieldset>
           </form>
        </div>
@@ -485,12 +564,15 @@
     </div>
     <!-- Main component for a primary marketing message or call to action -->
     <div id="container" class="jumbotron">
+        <p class="search_alert"></p>
         <form style="font-size:20px">
         <fieldset class="ui-helper-reset">
-          <label for="tab_title">Place</label>
-          <input type="text" name="place" id="place" value="" class="ui-widget-content ui-corner-all">
-          <label for="tab_date" >Key word</label>
-          <input name="tab_content" id="keyword" class="ui-widget-content ui-corner-all"></intput>
+          <label for="tab_title">City</label>
+          <input type="text" name="place" id="place" value="Chicago" class="ui-widget-content ui-corner-all" style="display:inline-block" title="Target City">
+          <label for="tab_title">State</label>
+          <input type="text" name="state" id="state" value="IL" class="ui-widget-content ui-corner-all" style="display:inline-block" title="Corresponding State">
+          <label for="tab_date">Key word</label>
+          <input name="tab_content" id="keyword" class="ui-widget-content ui-corner-all" title="Interested Properties"></intput>
         </fieldset>
         </form>
          <button id="search" class="btn btn-default">search</button>
@@ -499,9 +581,9 @@
             </ul>
         </div>
         <div class="btn-group" style="position:fixed;top:90%;right:10%;">
-            <button id="save" type="button" class="btn btn-default">Save</button>
+            <button id="save" type="button" class="btn btn-default" title="Save only selected schedule">Save</button>
             <button id="create" type="button" class="btn btn-default">Create Schedule</button>
-            <button id="delete" type="button" class="btn btn-default">Delete</button>
+            <button id="delete" type="button" class="btn btn-default" title="Drag event or Schedule tab to here to delete">Delete</button>
         </div>
         <!-- <table id="results" class="search_result"></table> -->
 
