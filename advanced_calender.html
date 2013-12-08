@@ -57,6 +57,7 @@
   $(function() {
     $( document ).tooltip();
     $( "#delete" ).droppable({
+      //accept: "#tabs",
       drop: function( event, ui ) {
         thisui = ui;
         console.log("You are trying to delete");
@@ -75,6 +76,7 @@
           $( this ).dialog( "close" );
         },
         Cancel: function() {
+          $("#tabs").tabs("refresh");
           $( this ).dialog( "close" );
         }
       }
@@ -91,13 +93,18 @@
         $("#"+panelId).fadeOut();
         $("#tabs").tabs( "refresh" );
         var k = findDuplicate(calenderList["Calenders"],itemid);
+        var k2 = getObjects(unsavedCalenders["Calenders"],"name",itemid);
         if ( k != -1){
           calenderList["Calenders"].splice(k,1);
+        }
+        while (k2.length != 0){
+          k2.splice(0,1);
         }
         localStorage.removeItem("Calenders");
         localStorage.setItem("Calenders",JSON.stringify(calenderList));
         $("#tabs").tabs("refresh");
       }
+      $("#tabs").tabs("refresh");
   }
 
   function findDuplicate(array,val){
@@ -487,12 +494,14 @@
                 cancel: "a.ui-icon", // clicking an icon won't initiate dragging
                 revert: "invalid", // when not dropped, the item will revert back to its initial position
                 containment: "document",
+                helper: "clone",
+                cursor: "move"
         });
         tabpanel='<div id="tabs-'+tabid+'">'+calendertemplate;
         $("#tabs").append(tabpanel);
         $("#tabs-"+tabid).droppable(
                     {
-                        accept: "div",
+                        accept: ".event_div",
                         drop: function( event, ui ) {
                                 console.log("Y position "+event.pageY);
                                 console.log("Scrolled Y position "+document.getElementById("tabs").scrollTop);
