@@ -58,7 +58,7 @@
     $( document ).tooltip();
     $( "#delete" ).droppable({
       drop: function( event, ui ) {
-        thisui = ui;
+        console.log("You are trying to delete");
         $( "#delete-confirm" ).dialog("open");
       }
     });
@@ -89,12 +89,6 @@
         console.log(panelId);
         $("#"+panelId).fadeOut();
         $("#tabs").tabs( "refresh" );
-        // for (var i=0;i<calenderList["Calenders"].length;i++){
-        //   if (calenderList["Calenders"][i] == itemid){
-        //     calenderList["Calenders"].splice(i,1);
-        //     break;
-        //   }
-        // }
         var k = findDuplicate(calenderList["Calenders"],itemid);
         if ( k != -1){
           calenderList["Calenders"].splice(k,1);
@@ -247,13 +241,15 @@
         var panelId = tabs.find(".ui-tabs-active").attr("aria-controls");
         console.log("You are trying to save schedule "+panelId);
         console.log("The active tab is "+tabs.find(".ui-tabs-active").attr('id'));
-        calenderList['Calenders'].push(tabs.find(".ui-tabs-active").attr('id'));
-        localStorage.setItem('Calenders',JSON.stringify(calenderList));
         var temp = getObjects(unsavedCalenders["Calenders"],"name",tabs.find(".ui-tabs-active").attr('id'));
-        if (temp.length >=1){
-        localStorage.setItem(tabs.find(".ui-tabs-active").attr('id'),JSON.stringify(temp[0]));
-        console.log("Schedule saved");
-        console.log(unsavedCalenders);
+        var temp2 = findDuplicate(calenderList["Calenders"],tabs.find(".ui-tabs-active").attr('id'));
+        if (temp.length >=1 && temp2.length<=0){
+          alert("Schedule Saved");
+          calenderList['Calenders'].push(tabs.find(".ui-tabs-active").attr('id'));
+          localStorage.setItem('Calenders',JSON.stringify(calenderList));
+          localStorage.setItem(tabs.find(".ui-tabs-active").attr('id'),JSON.stringify(temp[0]));
+          console.log("Schedule saved");
+          console.log(unsavedCalenders);
       }
         //localStorage.setItem('tabs',document.getElementById(panelId).innerHTML);
       });
@@ -542,7 +538,7 @@
 </head>
 <body id="body" onload="onLoadEvent()">
     <!-- Fixed navbar -->
-      <div id="delete-confirm" title="Empty the recycle bin?">
+      <div id="delete-confirm" title="Delete This Item for ever?">
         <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>These items will be permanently deleted and cannot be recovered. Are you sure?</p>
       </div>
       <div id="dialog-form" title="Create new user">
@@ -615,7 +611,7 @@
         <div class="btn-group" style="position:fixed;top:90%;right:10%;">
             <button id="save" type="button" class="btn btn-default" title="Save only selected schedule">Save</button>
             <button id="create" type="button" class="btn btn-default">Create Schedule</button>
-            <button id="delete" type="button" class="btn btn-default" title="Drag event or Schedule tab to here to delete">Delete</button>
+            <div id="delete" name="delete" type="button" class="btn btn-default" title="Drag event or Schedule tab to here to delete">Delete</div>
         </div>
         <!-- <table id="results" class="search_result"></table> -->
 
