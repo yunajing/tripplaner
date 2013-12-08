@@ -81,6 +81,18 @@
         }
       }
     });
+
+    $( "#informationbox" ).dialog({
+      resizable: false,
+      autoOpen: false,
+      height:140,
+      modal: true,
+      buttons: {
+        "OK": function() {
+          $( this ).dialog( "close" );
+        },
+      }
+    });
   });
   function deleteItem( $item ) {
       $item.fadeOut();
@@ -90,19 +102,33 @@
       if ($item.attr('aria-controls')!=null){
         var panelId = $item.remove().attr( "aria-controls" );
         console.log(panelId);
-        $("#"+panelId).fadeOut();
+        $("#"+panelId).remove();
         $("#tabs").tabs( "refresh" );
         var k = findDuplicate(calenderList["Calenders"],itemid);
-        var k2 = getObjects(unsavedCalenders["Calenders"],"name",itemid);
+        var k2 = removeObjects(unsavedCalenders["Calenders"],"name",itemid);
+        unsavedCalenders['Calenders'].splice(k2,1);
         if ( k != -1){
           calenderList["Calenders"].splice(k,1);
         }
-        while (k2.length != 0){
-          k2.splice(0,1);
-        }
         localStorage.removeItem("Calenders");
         localStorage.setItem("Calenders",JSON.stringify(calenderList));
+        $("#information").text("Schedule "+itemid+" already deleted!");
+        $("#informationbox").dialog("open");
         $("#tabs").tabs("refresh");
+      }
+      else if ($item.attr('id').substr(0,6)=="delete"){
+        var scheduleid = $('#tabs').find(".ui-tabs-active").attr("id");
+        console.log("Deleting event from schedule "+scheduleid);
+        var k = findDuplicate(calenderList["Calenders"],scheduleid);
+        var k2 = removeObjects(unsavedCalenders["Calenders"],"name",scheduleid);
+        var eventid = removeObjects(unsavedCalenders["Calenders"][k2]["event"],"event-id",itemid.substr(7,itemid.length));
+        unsavedCalenders["Calenders"][k2]["event"].splice(eventid,1);
+        if (k!=-1){
+          var tempSchedule = getObjects(unsavedCalenders["Calenders"],"name",scheduleid);
+          localStorage.setItem(scheduleid,JSON.stringify(tempSchedule[0]));
+        }
+        $("#information").text("Event already deleted!");
+        $("#informationbox").dialog("open");
       }
       $("#tabs").tabs("refresh");
   }
@@ -115,6 +141,14 @@
     }
     return -1;
   }
+   function removeObjects(obj, key, val) {
+    var indexes = [];
+    for (var i=0;i<obj.length;i++) {
+        if (obj[i][key] == val){
+          return i;
+        }
+    }
+    }
   function getObjects(obj, key, val) {
     var objects = [];
     for (var i in obj) {
@@ -156,6 +190,57 @@
       dialog.dialog( "close" );
       event.preventDefault();
     });
+
+     $( "#create" )
+      .button()
+      .click(function() {
+        dialog.dialog( "open" );
+        $( ".validateTips" )
+                .text("")
+      });
+
+    $("#create").removeClass("ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only");
+
+    $( "#search" )
+      .button()
+      .click(function() {
+        place = $("#place");
+        placeVal = place.val() || "Chicago,IL";
+        var keyword = $("#keyword").val() || "High";
+        //console.log(placeVal+" "+keyword);
+        search(placeVal,keyword);
+      });
+    $("#search").removeClass("ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only");
+
+    $( "#save" )
+      .button()
+      .click(function() {
+        console.log(unsavedCalenders);
+        tabs = $("#tabs");
+        var panelId = tabs.find(".ui-tabs-active").attr("aria-controls");
+        console.log("You are trying to save schedule "+panelId);
+        console.log("The active tab is "+tabs.find(".ui-tabs-active").attr('id'));
+        var temp = getObjects(unsavedCalenders["Calenders"],"name",tabs.find(".ui-tabs-active").attr('id'));
+        var temp2 = findDuplicate(calenderList["Calenders"],tabs.find(".ui-tabs-active").attr('id'));
+        if (temp.length >=1 && temp2<0){
+          $("#information").text("Schedule "+tabs.find(".ui-tabs-active").attr('id')+" Saved!");
+          $("#informationbox").dialog("open");
+          calenderList['Calenders'].push(tabs.find(".ui-tabs-active").attr('id'));
+          localStorage.setItem('Calenders',JSON.stringify(calenderList));
+          localStorage.setItem(tabs.find(".ui-tabs-active").attr('id'),JSON.stringify(temp[0]));
+          console.log("Schedule saved");
+          console.log(unsavedCalenders);
+        }
+        if (temp.length >=1 && temp2>=0){
+          $("#information").text("Schedule "+tabs.find(".ui-tabs-active").attr('id')+" Saved!");
+          $("#informationbox").dialog("open");
+          localStorage.setItem(tabs.find(".ui-tabs-active").attr('id'),JSON.stringify(temp[0]));
+          console.log("Schedule saved");
+          console.log(unsavedCalenders);
+        }
+        //localStorage.setItem('tabs',document.getElementById(panelId).innerHTML);
+      });
+    $("#save").removeClass("ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only");
  
     // actual addTab function: adds new tab using the input from the form above
     function addTab() {
@@ -173,7 +258,7 @@
         var label = tabTitle.val();
         var date = tabDate.val();
         console.log("New Schedule called "+label+". Selected date is "+date);
-        var newTab = {"name":label, "time":date, "event":[]};
+        var newTab = {"name":label, "time":date,"event_num":0, "event":[]};
         unsavedCalenders['Calenders'].push(newTab);
         //console.log(unsavedCalenders);
         $('#schedule').append(
@@ -220,54 +305,6 @@
     }
  
     // addTab button: just opens the dialog
-    $( "#create" )
-      .button()
-      .click(function() {
-        dialog.dialog( "open" );
-        $( ".validateTips" )
-                .text("")
-      });
-
-    $("#create").removeClass("ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only");
-
-    $( "#search" )
-      .button()
-      .click(function() {
-        place = $("#place");
-        placeVal = place.val() || "Chicago,IL";
-        var keyword = $("#keyword").val() || "High";
-        //console.log(placeVal+" "+keyword);
-        search(placeVal,keyword);
-      });
-    $("#search").removeClass("ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only");
-
-    $( "#save" )
-      .button()
-      .click(function() {
-        console.log(unsavedCalenders);
-        tabs = $("#tabs");
-        var panelId = tabs.find(".ui-tabs-active").attr("aria-controls");
-        console.log("You are trying to save schedule "+panelId);
-        console.log("The active tab is "+tabs.find(".ui-tabs-active").attr('id'));
-        var temp = getObjects(unsavedCalenders["Calenders"],"name",tabs.find(".ui-tabs-active").attr('id'));
-        var temp2 = findDuplicate(calenderList["Calenders"],tabs.find(".ui-tabs-active").attr('id'));
-        if (temp.length >=1 && temp2<0){
-          alert("Schedule Saved");
-          calenderList['Calenders'].push(tabs.find(".ui-tabs-active").attr('id'));
-          localStorage.setItem('Calenders',JSON.stringify(calenderList));
-          localStorage.setItem(tabs.find(".ui-tabs-active").attr('id'),JSON.stringify(temp[0]));
-          console.log("Schedule saved");
-          console.log(unsavedCalenders);
-        }
-        if (temp.length >=1 && temp2>=0){
-          alert("Schedule Saved");
-          localStorage.setItem(tabs.find(".ui-tabs-active").attr('id'),JSON.stringify(temp[0]));
-          console.log("Schedule saved");
-          console.log(unsavedCalenders);
-        }
-        //localStorage.setItem('tabs',document.getElementById(panelId).innerHTML);
-      });
-    $("#save").removeClass("ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only");
 
 
 // //Adding event to the calender
@@ -341,18 +378,22 @@
                 updateTips("Eding Time is prior to Starting Time");
             }
             if (bValid) {
-                var newEvent = {"fromHour": fromHour.val(), "fromMinute": fromMinute.val(), "toHour": toHour.val(), "toMinute": toMinute.val(), "comment":comment.val(),"placeURL":clone.href,"placeName":clone.innerHTML};
+                var newEvent = {"event-id":"","fromHour": fromHour.val(), "fromMinute": fromMinute.val(), "toHour": toHour.val(), "toMinute": toMinute.val(), "comment":comment.val(),"placeURL":clone.href,"placeName":clone.innerHTML};
                 var vid = $("#tabs").find(".ui-tabs-active").attr("aria-controls");
                 console.log("You are now adding to schedule "+vid);
                 var a = getObjects(unsavedCalenders["Calenders"],"name",$("#tabs").find(".ui-tabs-active").attr("id"));
                 var tempLength = 0;
+                var eventId;
                 if (a.length >= 1) {
+                  a[0]["event_num"]+=1;
+                  tempLength = a[0]['event_num'];
+                  eventId = vid+"-"+tempLength;
+                  newEvent["event-id"]=eventId;
                   a[0]["event"].push(newEvent);
-                  tempLength = a[0]['event'].length;
                   console.log("Event added! Updated list shown below");
                   console.log(unsavedCalenders);
                 }
-                var eventId = vid+"-"+tempLength;
+                //var eventId = vid+"-"+tempLength;
                 console.log("Your new event's id is "+eventId);
                 var t = (tTime-fTime)*26-2;
                 var slot = document.getElementById(vid).getElementsByTagName('div').item(1);
@@ -501,7 +542,6 @@
         $("#tabs").append(tabpanel);
         $("#tabs-"+tabid).droppable(
                     {
-                        accept: ".event_div",
                         drop: function( event, ui ) {
                                 console.log("Y position "+event.pageY);
                                 console.log("Scrolled Y position "+document.getElementById("tabs").scrollTop);
@@ -556,6 +596,9 @@
     <!-- Fixed navbar -->
       <div id="delete-confirm" title="Delete This Item for ever?">
         <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>These items will be permanently deleted and cannot be recovered. Are you sure?</p>
+      </div>
+      <div id="informationbox" title="Delete This Item for ever?">
+        <p id="information"><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>These items will be permanently deleted and cannot be recovered. Are you sure?</p>
       </div>
       <div id="dialog-form" title="Create new user">
         <div id="calenderName"></div>
