@@ -58,6 +58,7 @@
     $( document ).tooltip();
     $( "#delete" ).droppable({
       drop: function( event, ui ) {
+        thisui = ui;
         console.log("You are trying to delete");
         $( "#delete-confirm" ).dialog("open");
       }
