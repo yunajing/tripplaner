@@ -89,11 +89,15 @@
         console.log(panelId);
         $("#"+panelId).fadeOut();
         $("#tabs").tabs( "refresh" );
-        for (var i=0;i<calenderList["Calenders"].length;i++){
-          if (calenderList["Calenders"][i] == itemid){
-            calenderList["Calenders"].splice(i,1);
-            break;
-          }
+        // for (var i=0;i<calenderList["Calenders"].length;i++){
+        //   if (calenderList["Calenders"][i] == itemid){
+        //     calenderList["Calenders"].splice(i,1);
+        //     break;
+        //   }
+        // }
+        var k = findDuplicate(calenderList["Calenders"],itemid);
+        if ( k != -1){
+          calenderList["Calenders"].splice(k,1);
         }
         localStorage.removeItem("Calenders");
         localStorage.setItem("Calenders",JSON.stringify(calenderList));
@@ -101,6 +105,14 @@
       }
   }
 
+  function findDuplicate(array,val){
+    for (var i = 0;i<array.length;i++){
+      if (array[i]==val){
+        return i;
+      }
+    }
+    return -1;
+  }
   function getObjects(obj, key, val) {
     var objects = [];
     for (var i in obj) {
@@ -148,8 +160,9 @@
         var bValid = true;
         bValid = bValid && checkLength(tabTitle,"schedule name",1,8);
         bValid = bValid && checkRegexp(tabTitle,/^[a-z]([0-9a-z_])+$/i,"Schedule name illegal");
-        var tester = getObjects(calenderList,tabTitle);
-        if (tester.length != 0) {
+        var tester = getObjects(unsavedCalenders["Calenders"],"name",tabTitle.val());
+        console.log("Found "+tester.length+" match");
+        if (tester.length > 0) {
           bValid = false;
           updateTips("Schedule name already exist.");
         }
@@ -176,7 +189,17 @@
                     {
                         accept: "div",
                         drop: function( event, ui ) {
-                            if ($(this).innerHTML == null || $(this).innerHTML == ''){
+                                console.log("Y position "+event.pageY);
+                                console.log("Scrolled Y position "+document.getElementById("tabs").scrollTop);
+                                console.log("Scrolled Y position "+document.getElementById("tabs").offsetTop);
+                                console.log("div position "+this.offsetTop);
+                                console.log("container position "+document.getElementById("container").offsetTop);
+                                var fTime = Math.floor((event.pageY+document.getElementById("tabs").scrollTop-document.getElementById("tabs").offsetTop-this.offsetTop-document.getElementById('body').scrollTop)/26);
+                                console.log("estimated position starting time is "+fTime);
+                                $('#fromHour').val(fTime);
+                                $('#fromMinute').val(00);
+                                $('#toHour').val(fTime+1);
+                                $('#toMinute').val(00);
                                 var draggedid = $(ui.draggable).attr('id');
                                 var element = document.getElementById(draggedid).getElementsByTagName("a").item(0)
                                 clone = element.cloneNode();
@@ -186,7 +209,6 @@
                                 $( "#dialog-form" ).dialog( "open" );
                                 $( "#calenderName").html('<p id= "calenderName" class="validateTips">Adding to Schedule:'+vid.substr(0,vid.length-4)+'</p>');
                                 document.getElementById('body').style.overflow="hidden";
-                            }
                     }
                 }
         )
@@ -367,7 +389,6 @@
                         {},
                         function(data) {
                             venues = data['response']['groups'][0]['items'];
-                            console.log(document.getElementById("results"));
                             if (document.getElementById("results")==null) {
                                 $('#container').append(
                                     '<table id="results" class="search_result">');
@@ -470,6 +491,17 @@
                     {
                         accept: "div",
                         drop: function( event, ui ) {
+                                console.log("Y position "+event.pageY);
+                                console.log("Scrolled Y position "+document.getElementById("tabs").scrollTop);
+                                console.log("Scrolled Y position "+document.getElementById("tabs").offsetTop);
+                                console.log("div position "+this.offsetTop);
+                                console.log("container position "+document.getElementById("container").offsetTop);
+                                var fTime = Math.floor((event.pageY+document.getElementById("tabs").scrollTop-document.getElementById("tabs").offsetTop-this.offsetTop-document.getElementById('body').scrollTop)/26);
+                                console.log("estimated position starting time is "+fTime);
+                                $('#fromHour').val(fTime);
+                                $('#fromMinute').val(00);
+                                $('#toHour').val(fTime+1);
+                                $('#toMinute').val(00);
                                 var draggedid = $(ui.draggable).attr('id');
                                 var element = document.getElementById(draggedid).getElementsByTagName("a").item(0)
                                 clone = element.cloneNode();
