@@ -204,6 +204,7 @@
     $( "#search" )
       .button()
       .click(function() {
+        $(".search_alert").text("Searching...");
         place = $("#place");
         placeVal = place.val() || "Chicago,IL";
         var keyword = $("#keyword").val() || "High";
@@ -439,6 +440,10 @@
                                 + config.apisecret,
                         {},
                         function(data) {
+                            if (data['response']['warning']!=null){
+                              updateAlerts(data['response']['warning']['text']);
+                            }
+                            else {updateAlerts("Results loaded!");}
                             venues = data['response']['groups'][0]['items'];
                             if (document.getElementById("results")==null) {
                                 $('#container').append(
@@ -523,6 +528,15 @@
                 tips.removeClass( "ui-state-highlight", 1500 );
               }, 500 );
     }
+
+    function updateAlerts( t ) {
+              $( ".search_alert" )
+                .text( t )
+                .addClass( "ui-state-highlight" );
+              setTimeout(function() {
+                 $( ".search_alert"  ).removeClass( "ui-state-highlight", 1500 );
+              }, 500 );
+        }
 
     function drawTab(newTab,tabid) {
         console.log("Drawing schedule event for schedule "+tabid);
