@@ -440,10 +440,11 @@
                                 + config.apisecret,
                         {},
                         function(data) {
+                            console.log("Target place "+data['response']['headerLocation']);
                             if (data['response']['warning']!=null){
                               updateAlerts(data['response']['warning']['text']);
                             }
-                            else {updateAlerts("Results loaded!");}
+                            else {updateAlerts("Results loaded! Target Place: "+data['response']['headerLocation']+", Key word: "+data['response']['query']);}
                             venues = data['response']['groups'][0]['items'];
                             if (document.getElementById("results")==null) {
                                 $('#container').append(
@@ -604,6 +605,27 @@
         }
         $("#tabs").tabs("refresh");
     }
+    function closeWindow(){
+      if(confirm()){ return true;}
+      return false;
+    }
+    var confirmOnPageExit = function (e) 
+{
+    // If we haven't been passed the event get the window.event
+    e = e || window.event;
+
+    var message = 'Leaving page will delete unsaved changes.';
+
+    // For IE6-8 and Firefox prior to version 4
+    if (e) 
+    {
+        e.returnValue = message;
+    }
+
+    // For Chrome, Safari, IE8+ and Opera 12+
+    return message;
+};
+window.onbeforeunload = confirmOnPageExit;
 </script>
 </head>
 <body id="body" onload="onLoadEvent()">
@@ -669,11 +691,11 @@
         <form style="font-size:20px">
         <fieldset class="ui-helper-reset">
           <label for="tab_title">City</label>
-          <input type="text" name="place" id="place" value="Chicago" class="ui-widget-content ui-corner-all" style="display:inline-block" title="Target City">
+          <input type="text" name="place" id="place" value="New York" class="ui-widget-content ui-corner-all" style="display:inline-block" title="Target City">
           <label for="tab_title">State</label>
-          <input type="text" name="state" id="state" value="IL" class="ui-widget-content ui-corner-all" style="display:inline-block" title="Corresponding State">
+          <input type="text" name="state" id="state" value="NY" class="ui-widget-content ui-corner-all" style="display:inline-block" title="Corresponding State">
           <label for="tab_date">Key word</label>
-          <input name="tab_content" id="keyword" class="ui-widget-content ui-corner-all" title="Interested Properties"></intput>
+          <input name="tab_content" id="keyword" value="Columbia University" class="ui-widget-content ui-corner-all" title="Interested Properties"></intput>
         </fieldset>
         </form>
          <button id="search" class="btn btn-default">search</button>
