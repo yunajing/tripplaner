@@ -251,7 +251,13 @@
           localStorage.setItem(tabs.find(".ui-tabs-active").attr('id'),JSON.stringify(temp[0]));
           console.log("Schedule saved");
           console.log(unsavedCalenders);
-      }
+        }
+        if (temp.length >=1 && temp2>=0){
+          alert("Schedule Saved");
+          localStorage.setItem(tabs.find(".ui-tabs-active").attr('id'),JSON.stringify(temp[0]));
+          console.log("Schedule saved");
+          console.log(unsavedCalenders);
+        }
         //localStorage.setItem('tabs',document.getElementById(panelId).innerHTML);
       });
     $("#save").removeClass("ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only");
