@@ -210,8 +210,12 @@
         var state = $("#state").val() || "NY";
         var place = city+","+state
         var keyword = $("#keyword").val() || "Columbia Univsersity";
+        var bValid = true;
+        bValid = bValid && s_checkRegexp($("#place"),/^([a-z])+$/i);
+        bValid = bValid && s_checkRegexp($("#state"),/^([a-z])+$/i);
+        if (!bValid) {updateAlerts("Please input only letters for city and state")}
         //console.log(placeVal+" "+keyword);
-        search(place,keyword);
+        else search(place,keyword);
       });
     $("#search").removeClass("ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only");
 
@@ -335,6 +339,15 @@
          $( "#m_dialog-form" ).position({
             at: "center center",
         });
+
+    function s_checkRegexp( o, regexp) {
+      if ( !( regexp.test( o.val() ) ) ) {
+        o.addClass( "ui-state-error" );
+        return false;
+      } else {
+        return true;
+      }
+    }
 
     function checkRegexp( o, regexp, n ) {
       if ( !( regexp.test( o.val() ) ) ) {
