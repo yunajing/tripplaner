@@ -264,7 +264,7 @@
         unsavedCalenders['Calenders'].push(newTab);
         //console.log(unsavedCalenders);
         $('#schedule').append(
-                            '<li id="'+label+'"><a href="#tabs-'+label+'">'+label+'</a></li>');
+                            '<li id="'+label+'" style="width:40px"><a href="#tabs-'+label+'">'+label+'</a></li>');
         $("li",$("#schedule")).draggable({
                 cancel: "a.ui-icon", // clicking an icon won't initiate dragging
                 revert: "invalid", // when not dropped, the item will revert back to its initial position
@@ -634,7 +634,7 @@
         var label = newTab['name']||"newSchedule-"+i,
         id = "tag-"+i;
         $('#schedule').append(
-                            '<li id="'+tabid+'"><a href="#tabs-'+tabid+'">'+label+'</a></li>');
+                            '<li id="'+tabid+'" style="width:40px"><a href="#tabs-'+tabid+'">'+label+'</a></li>');
         $("li",$("#schedule")).draggable({
                 cancel: "a.ui-icon", // clicking an icon won't initiate dragging
                 revert: "invalid", // when not dropped, the item will revert back to its initial position
