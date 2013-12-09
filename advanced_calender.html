@@ -523,13 +523,15 @@
         authUrl : 'https://foursquare.com/',
         apiUrl : 'https://api.foursquare.com/'
     };
-    function search(place, keyword) {
+    function search(place, keyword){
+        var success = false;
         $.getJSON(config.apiUrl + 'v2/venues/explore?near=' + place
                                 + '&query=' + keyword + '&client_id='
                                 + config.apiKey + '&client_secret='
                                 + config.apisecret,
-                        {},
+                        //{},
                         function(data) {
+                            success = true;
                             console.log("Target place "+data['response']['headerLocation']);
                             if (data['response']['warning']!=null){
                               updateAlerts(data['response']['warning']['text']);
@@ -581,6 +583,10 @@
                             }
                             $('#container').append('</table>');
                         })
+        setTimeout(function(){
+          if (!success){
+            updateAlerts("Sorry, your search is invalid. Please modify and try again.");}
+        },200);
     }
     function onLoadEvent() {
         $("#tabs").tabs().addClass("ui-tabs-vertical ui-helper-clearfix");
