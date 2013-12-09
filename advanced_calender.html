@@ -48,6 +48,7 @@
 </style>
 <script>
   var clone;
+  var selectedEvent;
   var vid;
   var tabCounter=0;
   var calenderList;
@@ -330,6 +331,10 @@
             at: "center center",
         });
 
+         $( "#m_dialog-form" ).position({
+            at: "center center",
+        });
+
     function checkRegexp( o, regexp, n ) {
       if ( !( regexp.test( o.val() ) ) ) {
         o.addClass( "ui-state-error" );
@@ -350,6 +355,71 @@
         return true;
       }
     }
+
+    $( "#m_dialog-form" ).dialog({
+      autoOpen: false,
+      height: 300,
+      width: 350,
+      modal: true,
+      buttons: {
+        "Modify": function() {
+            //$("#"+selectedEvent.id).fadeOut();
+            var bValid = true;
+            bValid = bValid && checkRegexp($("#m_fromHour"),/^([0-9])+$/,"Only Numeric input is allowed for Time");
+            bValid = bValid && checkRegexp($("#m_fromMinute"),/^([0-9])+$/,"Only Numeric input is allowed for Time");
+            fTime = $("#m_fromMinute").val()/60;
+            fTime+=$("#m_fromHour").val()/1;
+            if (fTime < 0 || fTime > 24){
+                bValid = false;
+                updateTips("Input Time exceeds 24 hours");
+            }
+            bValid = bValid && checkRegexp($("#m_toHour"),/^([0-9])+$/,"Only Numeric input is allowed for Time");
+            bValid = bValid && checkRegexp($("#m_toMinute"),/^([0-9])+$/,"Only Numeric input is allowed for Time");
+            tTime = ($("#m_toHour").val()/1)+($("#m_toMinute").val()/60);
+            if (tTime<0 || tTime > 24){
+                bValid = false;
+                updateTips("Input Time exceeds 24 hours");
+            }
+            if (tTime <= fTime){
+                bValid = false;
+                updateTips("Eding Time is prior to Starting Time");
+            }
+            if (bValid) {
+                var scheduleid = $('#tabs').find(".ui-tabs-active").attr("id");
+                    console.log("Modifying event from schedule "+scheduleid);
+                    var k = findDuplicate(calenderList["Calenders"],scheduleid);
+                    var k2 = removeObjects(unsavedCalenders["Calenders"],"name",scheduleid);
+                    var eventid = removeObjects(unsavedCalenders["Calenders"][k2]["event"],"event-id",selectedEvent.id.substr(7,selectedEvent.id.length));
+                    unsavedCalenders["Calenders"][k2]["event"][eventid]["fromHour"] = $("#m_fromHour").val();
+                    unsavedCalenders["Calenders"][k2]["event"][eventid]["fromMinute"]= $("#m_fromMinute").val();
+                    unsavedCalenders["Calenders"][k2]["event"][eventid]["toHour"] = $("#m_toHour").val();
+                    unsavedCalenders["Calenders"][k2]["event"][eventid]["toMinute"] = $("#m_toMinute").val();
+                    unsavedCalenders["Calenders"][k2]["event"][eventid]["comment"] = $("#m_comment").val();
+                console.log("New time "+fTime);
+                console.log("New Duration "+(tTime-fTime));
+                selectedEvent.style.top = ""+(6+fTime*26)+"px";
+                selectedEvent.style.height = ""+((tTime-fTime)*26-2)+"px";
+                console.log(selectedEvent);
+                $("#"+selectedEvent.id).html("");
+                $("#"+selectedEvent.id).append('<a href="'+unsavedCalenders["Calenders"][k2]["event"][eventid]["placeURL"]+'" target="_blank">'+unsavedCalenders["Calenders"][k2]["event"][eventid]["placeName"]+'</a>');
+                $("#"+selectedEvent.id).append("<p>"+unsavedCalenders["Calenders"][k2]["event"][eventid]["comment"]+"</p>");
+                $("#"+selectedEvent.id).show();
+                //$("#"+vid).append('<div id="delete-'+vid+'"draggable="true" ondragstart="drag(event)">'+clone+'</div>');
+                allFields.val( "" ).removeClass( "ui-state-error" );
+                $( this ).dialog( "close" );
+                document.getElementById('body').style.overflow="scroll";
+            }
+        },
+        Cancel: function() {
+          $( this ).dialog( "close" );
+          document.getElementById('body').style.overflow="scroll";
+        }
+      },
+      close: function() {
+        allFields.val( "" ).removeClass( "ui-state-error" );
+        document.getElementById('body').style.overflow="scroll";
+      }
+    });
 
     $( "#dialog-form" ).dialog({
       autoOpen: false,
@@ -399,9 +469,28 @@
                 var t = (tTime-fTime)*26-2;
                 var slot = document.getElementById(vid).getElementsByTagName('div').item(1);
                 var top = 6+26*fTime;
-                $(slot).append('<div id="delete-'+eventId+'" class="event_div" style="top:'+top+'px;height:'+t+'px"></div>');
+                $(slot).append('<div id="delete-'+eventId+'" title="Click to edit" class="event_div" style="top:'+top+'px;height:'+t+'px"></div>');
                 $("#delete-"+eventId).append(clone);
                 $("#delete-"+eventId).append("<p>"+comment.val()+"</p>");
+                $("#delete-"+eventId).button().click(function(){
+                    selectedEvent = this;
+                    console.log("You selece this event");
+                    console.log(this);
+                    var scheduleid = $('#tabs').find(".ui-tabs-active").attr("id");
+                    console.log("Adding event to schedule "+scheduleid);
+                    var k = findDuplicate(calenderList["Calenders"],scheduleid);
+                    var k2 = removeObjects(unsavedCalenders["Calenders"],"name",scheduleid);
+                    var eventid = removeObjects(unsavedCalenders["Calenders"][k2]["event"],"event-id",this.id.substr(7,this.id.length));
+                    if (eventid!=-1){
+                        $("#m_fromHour").val(unsavedCalenders["Calenders"][k2]["event"][eventid]["fromHour"]);
+                        $("#m_fromMinute").val(unsavedCalenders["Calenders"][k2]["event"][eventid]["fromMinute"]);
+                        $("#m_toHour").val(unsavedCalenders["Calenders"][k2]["event"][eventid]["toHour"]);
+                        $("#m_toMinute").val(unsavedCalenders["Calenders"][k2]["event"][eventid]["toMinute"]);
+                        $("#m_comment").val(unsavedCalenders["Calenders"][k2]["event"][eventid]["comment"]);
+                    }
+                    $("#m_dialog-form").dialog("open");
+                });
+                $("#delete-"+eventId).removeClass("ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only");
                 $("#delete-"+eventId).draggable({
                     cancel: "a.ui-icon", // clicking an icon won't initiate dragging
                     revert: "invalid", // when not dropped, the item will revert back to its initial position
@@ -584,16 +673,35 @@
                 var currentEvent = newTab['event'][counter];
                 var fTime = currentEvent['fromHour']/1 + currentEvent['fromMinute']/60;
                 var tTime = currentEvent['toHour']/1 + currentEvent['toMinute']/60;
-                var eventId = tabid+"-"+j;
+                var eventId = currentEvent['event-id'];
                 var placeUrl = currentEvent['placeURL'];
                 var placeName = currentEvent['placeName'];
                 var t = (tTime-fTime)*26-2;
                 var slot = document.getElementById("tabs-"+tabid).getElementsByTagName('div').item(1);
                 var top = 6+26*fTime;
-                $(slot).append('<div id="delete-'+eventId+'" class="event_div" style="top:'+top+'px;height:'+t+'px"></div>');
+                $(slot).append('<div id="delete-'+eventId+'" title="Clike to Edit" class="event_div" style="top:'+top+'px;height:'+t+'px"></div>');
                 //console.log(currentEvent['placeURl']);
                 $("#delete-"+eventId).append('<a href="'+placeUrl+'" target="_blank">'+placeName+'</a>');
                 $("#delete-"+eventId).append("<p>"+currentEvent['comment']+"</p>");
+                $("#delete-"+eventId).button().click(function(){
+                    selectedEvent = this;
+                    console.log("You selece this event");
+                    console.log(this);
+                    var scheduleid = $('#tabs').find(".ui-tabs-active").attr("id");
+                    console.log("Deleting event from schedule "+scheduleid);
+                    var k = findDuplicate(calenderList["Calenders"],scheduleid);
+                    var k2 = removeObjects(unsavedCalenders["Calenders"],"name",scheduleid);
+                    var eventid = removeObjects(unsavedCalenders["Calenders"][k2]["event"],"event-id",this.id.substr(7,this.id.length));
+                    if (eventid!=-1){
+                        $("#m_fromHour").val(unsavedCalenders["Calenders"][k2]["event"][eventid]["fromHour"]);
+                        $("#m_fromMinute").val(unsavedCalenders["Calenders"][k2]["event"][eventid]["fromMinute"]);
+                        $("#m_toHour").val(unsavedCalenders["Calenders"][k2]["event"][eventid]["toHour"]);
+                        $("#m_toMinute").val(unsavedCalenders["Calenders"][k2]["event"][eventid]["toMinute"]);
+                        $("#m_comment").val(unsavedCalenders["Calenders"][k2]["event"][eventid]["comment"]);
+                    }
+                    $("#m_dialog-form").dialog("open");
+                });
+                $("#delete-"+eventId).removeClass("ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only");
                 $("#delete-"+eventId).draggable({
                     cancel: "a.ui-icon", // clicking an icon won't initiate dragging
                     revert: "invalid", // when not dropped, the item will revert back to its initial position
@@ -654,6 +762,26 @@ window.onbeforeunload = confirmOnPageExit;
           </fieldset>
         </form>
       </div>
+
+      <div id="m_dialog-form" title="Modify event">
+        <div id="m_calenderName"></div>
+        <p class="validateTips">All form fields are required.</p>
+        <form>
+          <fieldset>
+            <label for="name">From:</label>
+            <input type="text" name="m_fromHour" id="m_fromHour" class="text ui-widget-content ui-corner-all" style="width:30%;display:inline-block">
+            <span style="width:5%"> : </span>
+            <input type="text" name="m_fromMinute" id="m_fromMinute" class="text ui-widget-content ui-corner-all" style="width:30%;display:inline-block">
+            <label for="email">To Hour:</label>
+            <input type="text" name="m_toHour" id="m_toHour" class="text ui-widget-content ui-corner-all" style="width:30%;display:inline-block">
+            <span tyle="width:5%">:</span>
+            <input type="text" name="m_toMinute" id="m_toMinute" class="text ui-widget-content ui-corner-all" style="width:30%;display:inline-block">
+            <label for="password">Comments:</label>
+            <input type="text" name="m_comment" id="m_comment" value="" class="text ui-widget-content ui-corner-all">
+          </fieldset>
+        </form>
+      </div>
+
       <div id="createCalendar" title="Creating new Schedule">
           <form>
             <fieldset class="ui-helper-reset">
@@ -675,7 +803,7 @@ window.onbeforeunload = confirmOnPageExit;
                         class="icon-bar"></span> <span class="icon-bar"></span> <span
                         class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="advanced_calender.html">Trip Planer</a>
+                <a class="navbar-brand" href="advanced_calender.html">Trip Planner</a>
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
