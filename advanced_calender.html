@@ -211,9 +211,11 @@
         var place = city+","+state
         var keyword = $("#keyword").val() || "Columbia Univsersity";
         var bValid = true;
-        bValid = bValid && s_checkRegexp($("#place"),/^([a-z])+$/i);
+        bValid = bValid && s_checkRegexp($("#place"),/^([a-z ])+$/i);
         bValid = bValid && s_checkRegexp($("#state"),/^([a-z])+$/i);
-        if (!bValid) {updateAlerts("Please input only letters for city and state")}
+        if (!bValid) {
+          $("#results").html("");
+          updateAlerts("Input invalid. Only letters and space for city, only letters for state")}
         //console.log(placeVal+" "+keyword);
         else search(place,keyword);
       });
@@ -598,8 +600,9 @@
                         })
         setTimeout(function(){
           if (!success){
+            $("#results").html("");
             updateAlerts("Sorry, your search is invalid. Please modify and try again.");}
-        },200);
+        },1500);
     }
     function onLoadEvent() {
         $("#tabs").tabs().addClass("ui-tabs-vertical ui-helper-clearfix");
