@@ -206,11 +206,12 @@
       .button()
       .click(function() {
         $(".search_alert").text("Searching...");
-        place = $("#place");
-        placeVal = place.val() || "Chicago,IL";
-        var keyword = $("#keyword").val() || "High";
+        var city = $("#place").val() || "New York";
+        var state = $("#state").val() || "NY";
+        var place = city+","+state
+        var keyword = $("#keyword").val() || "Columbia Univsersity";
         //console.log(placeVal+" "+keyword);
-        search(placeVal,keyword);
+        search(place,keyword);
       });
     $("#search").removeClass("ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only");
 
