@@ -289,6 +289,47 @@
       
     }
 
+    $( "#edit" )
+      .button()
+      .click(function() {
+        var panelId = $("#tabs").find(".ui-tabs-active").attr("aria-controls");
+        var temp = getObjects(unsavedCalenders["Calenders"],"name",$("#tabs").find(".ui-tabs-active").attr('id'));
+        console.log($("#tabs").find(".ui-tabs-active").attr('id'));
+        console.log(temp[0]['name']);
+        $("#e_title").val(temp[0]['name']);
+        $("#e_datepicker").val(temp[0]['time']);
+        $("#editCalendar").dialog("open");
+      });
+    $("#edit").removeClass("ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only");
+
+    function editTab(){
+      var panelId = $("#tabs").find(".ui-tabs-active").attr("aria-controls");
+      var temp = getObjects(unsavedCalenders["Calenders"],"name",$("#tabs").find(".ui-tabs-active").attr('id'));
+      var bValid = true;
+      bValid = bValid && checkLength($("#e_title"),"schedule name",1,8);
+      bValid = bValid && checkRegexp($("#e_title"),/^[a-z]([0-9a-z_])+$/i,"Schedule name illegal");
+      var tester = getObjects(unsavedCalenders["Calenders"],"name",$("#e_title").val());
+      if (tester[0]==temp[0] && tester.length >= 1){
+        bValid = bValid && true;
+      }
+      else if (tester.length!=0){
+          bValid = false;
+          updateTips("Schedule name already exist.");
+      }
+      console.log("New Schedule name is "+tabTitle.val()+" Validation of this name is "+bValid);
+        if (bValid){
+        var label = $("#e_title").val();
+        var date = $("#e_datepicker").val();
+        temp[0]['name'] = label;
+        temp[0]['time'] = date;
+        console.log(unsavedCalenders);
+        var item = $("#tabs").find(".ui-tabs-active");
+        item.text(label+" "+date);
+        $( "#editCalendar" ).dialog("close");
+      }
+      
+    }
+
     $( "#save" )
       .button()
       .click(function() {
@@ -333,7 +374,11 @@
           var newTab = {"id":eventID,"name":label, "time":date,"event_num":0, "event":[]};
           unsavedCalenders['Calenders'].push(newTab);
         $('#schedule').append(
+<<<<<<< HEAD
                             '<li id="tag-'+eventID+'" style="width:130px"><a href="#tabs-'+eventID+'">'+label+' '+date+'</a></li>');
+=======
+                            '<li id="'+label+'" style="width:130px"><a href="#tabs-'+label+'">'+label+' '+date+'</a></li>');
+>>>>>>> 8ebe44a8176d08b17aaa8d508fff732c498f9ea3
         $("li",$("#schedule")).draggable({
                 cancel: "a.ui-icon", // clicking an icon won't initiate dragging
                 revert: "invalid", // when not dropped, the item will revert back to its initial position
@@ -725,6 +770,14 @@
                  $( ".search_alert"  ).removeClass( "ui-state-highlight", 1500 );
            
                }, 500 );
+<<<<<<< HEAD
+    }
+=======
+        }
+>>>>>>> 8ebe44a8176d08b17aaa8d508fff732c498f9ea3
+
+    function EditCalender(){
+      console.log("Double Clicked!");
     }
 
     function drawTab(newTab,tabid) {
@@ -732,7 +785,11 @@
         console.log("Current schedule is "+localStorage.getItem(calenderList['Calenders'][i]));
         var label = newTab['name'];
         $('#schedule').append(
+<<<<<<< HEAD
                             '<li id="tag-'+tabid+'" style="width:130px" ondblclick="EditCalender()"><a href="#tabs-'+tabid+'">'+label+' '+newTab['time']+'</a></li>');
+=======
+                            '<li id="'+tabid+'" style="width:130px" ondblclick="EditCalender()"><a href="#tabs-'+tabid+'">'+label+' '+newTab['time']+'</a></li>');
+>>>>>>> 8ebe44a8176d08b17aaa8d508fff732c498f9ea3
         $("li",$("#schedule")).draggable({
                 cancel: "a.ui-icon", // clicking an icon won't initiate dragging
                 revert: "invalid", // when not dropped, the item will revert back to its initial position
@@ -901,7 +958,11 @@ window.onbeforeunload = confirmOnPageExit;
               <label for="tab_title">Title</label>
               <input type="text" name="etitle" id="e_title" value="" class="ui-widget-content ui-corner-all" title="Schedule name may consist of a-z, 0-9, underscores, begin with a letter, within length of 1 to 8">
               <label for="tab_date">Date</label>
+<<<<<<< HEAD
               <input type="text" name="e_datepicker" readonly="true" onmousedown="return true" id="e_datepicker" class="ui-widget-content ui-corner-all">
+=======
+              <input type="text" name="datepicker" readonly="true" onmousedown="return true" id="e_datepicker" class="ui-widget-content ui-corner-all">
+>>>>>>> 8ebe44a8176d08b17aaa8d508fff732c498f9ea3
             </fieldset>
           </form>
       </div>
