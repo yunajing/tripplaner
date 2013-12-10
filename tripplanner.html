@@ -333,7 +333,7 @@
           var newTab = {"id":eventID,"name":label, "time":date,"event_num":0, "event":[]};
           unsavedCalenders['Calenders'].push(newTab);
         $('#schedule').append(
-                            '<li id="tag-'+eventID+'" style="width:100px"><a href="#tabs-'+eventID+'">'+label+' '+date+'</a></li>');
+                            '<li id="tag-'+eventID+'" style="width:130px"><a href="#tabs-'+eventID+'">'+label+' '+date+'</a></li>');
         $("li",$("#schedule")).draggable({
                 cancel: "a.ui-icon", // clicking an icon won't initiate dragging
                 revert: "invalid", // when not dropped, the item will revert back to its initial position
@@ -732,7 +732,7 @@
         console.log("Current schedule is "+localStorage.getItem(calenderList['Calenders'][i]));
         var label = newTab['name'];
         $('#schedule').append(
-                            '<li id="tag-'+tabid+'" style="width:100px" ondblclick="EditCalender()"><a href="#tabs-'+tabid+'">'+label+' '+newTab['time']+'</a></li>');
+                            '<li id="tag-'+tabid+'" style="width:130px" ondblclick="EditCalender()"><a href="#tabs-'+tabid+'">'+label+' '+newTab['time']+'</a></li>');
         $("li",$("#schedule")).draggable({
                 cancel: "a.ui-icon", // clicking an icon won't initiate dragging
                 revert: "invalid", // when not dropped, the item will revert back to its initial position
