@@ -274,6 +274,7 @@
       var temp = getObjects(unsavedCalenders["Calenders"],"id",tabid);
       var bValid = true;
       bValid = bValid && checkLength($("#e_title"),"schedule name",1,8);
+      bValid = bValid && checkRegexp(tabTitle,/^[a-z]([0-9a-z_])+$/i,"Chalender title may consist of letters, numbers and underscores. Must begin with letter.");
       console.log("New Schedule name is "+tabTitle.val()+" Validation of this name is "+bValid);
         if (bValid){
         var label = $("#e_title").val();
@@ -324,7 +325,8 @@
     function addTab() {
         var eventID = new Date().getTime();
         var bValid = true;
-        bValid = bValid && checkLength(tabTitle,"schedule name",0,10);
+        bValid = bValid && checkLength(tabTitle,"schedule name",0,8);
+        bValid = bValid && checkRegexp(tabTitle,/^[a-z]([0-9a-z_])+$/i,"Chalender title may consist of letters, numbers and underscores. Must begin with letter.");
         console.log("New Schedule name is "+tabTitle.val()+" Validation of this name is "+bValid);
         if (bValid){
           var label = tabTitle.val();
@@ -358,6 +360,7 @@
                                 $('#fromMinute').val(00);
                                 $('#toHour').val(fTime+1);
                                 $('#toMinute').val(00);
+                                $('.validateTips').text("");
                                 var draggedid = $(ui.draggable).attr('id');
                                 var element = document.getElementById(draggedid).getElementsByTagName("a").item(0)
                                 clone = element.cloneNode();
@@ -365,7 +368,7 @@
                                 vid= $(this).attr('id');
                                 //console.log(vid);
                                 $( "#dialog-form" ).dialog( "open" );
-                                $( "#calenderName").html('<p id= "calenderName" class="validateTips">Adding to Schedule:'+vid+'</p>');
+                                $( "#calenderName").html('<p id= "calenderName">Adding to Schedule:'+vid+'</p>');
                                 document.getElementById('body').style.overflow="hidden";
                     }
                 }
@@ -756,6 +759,7 @@
                                 $('#fromMinute').val(00);
                                 $('#toHour').val(fTime+1);
                                 $('#toMinute').val(00);
+                                $('.validateTips').text("");
                                 var draggedid = $(ui.draggable).attr('id');
                                 var element = document.getElementById(draggedid).getElementsByTagName("a").item(0)
                                 clone = element.cloneNode();
@@ -851,7 +855,7 @@ window.onbeforeunload = confirmOnPageExit;
             <input type="text" name="fromHour" id="fromHour" class="text ui-widget-content ui-corner-all" style="width:30%;display:inline-block">
             <span style="width:5%"> : </span>
             <input type="text" name="fromMinute" id="fromMinute" class="text ui-widget-content ui-corner-all" style="width:30%;display:inline-block">
-            <label for="email">To Hour:</label>
+            <label for="email">To:</label>
             <input type="text" name="toHour" id="toHour" class="text ui-widget-content ui-corner-all" style="width:30%;display:inline-block">
             <span tyle="width:5%">:</span>
             <input type="text" name="toMinute" id="toMinute" class="text ui-widget-content ui-corner-all" style="width:30%;display:inline-block">
@@ -870,7 +874,7 @@ window.onbeforeunload = confirmOnPageExit;
             <input type="text" name="m_fromHour" id="m_fromHour" class="text ui-widget-content ui-corner-all" style="width:30%;display:inline-block">
             <span style="width:5%"> : </span>
             <input type="text" name="m_fromMinute" id="m_fromMinute" class="text ui-widget-content ui-corner-all" style="width:30%;display:inline-block">
-            <label for="email">To Hour:</label>
+            <label for="email">To:</label>
             <input type="text" name="m_toHour" id="m_toHour" class="text ui-widget-content ui-corner-all" style="width:30%;display:inline-block">
             <span tyle="width:5%">:</span>
             <input type="text" name="m_toMinute" id="m_toMinute" class="text ui-widget-content ui-corner-all" style="width:30%;display:inline-block">
