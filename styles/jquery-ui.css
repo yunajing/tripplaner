@@ -734,9 +734,9 @@ button.ui-button::-moz-focus-inner {
 	float:right;
 	padding: .2em;
 	right:10%;
-	top:20%;
+	top:25%;
 	height:70%;
-	width: 35%;
+	width: 40%;
 	overflow:scroll;
 	overflow-x:hidden; 	
 }
