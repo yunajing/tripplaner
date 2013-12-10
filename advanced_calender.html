@@ -16,6 +16,7 @@
 
 <!-- Custom styles for this template -->
 <link href="./styles/navbar-fixed-top.css" rel="stylesheet">
+<link href="http://getbootstrap.com/2.3.2/assets/css/bootstrap-responsive.css" rel="stylesheet">
 <link href="./styles/user_style.css" rel="stylesheet">
 <link href="./styles/style.css" rel="stylesheet" type="text/css">
 <link rel="stylesheet" href="./styles/jquery-ui.css">
@@ -206,18 +207,32 @@
       .button()
       .click(function() {
         $(".search_alert").text("Searching...");
-        var city = $("#place").val() || "New York";
-        var state = $("#state").val() || "NY";
-        var place = city+","+state
-        var keyword = $("#keyword").val() || "Columbia Univsersity";
         var bValid = true;
+        var city = $("#place").val() || "New York";
+        var stateid = document.getElementById("state").selectedIndex;
+        console.log("selected id is "+(stateid+1));
+        if (stateid!=0){
+          state = document.getElementById("s_"+(stateid+1)).innerHTML;
+        }
+        else bValid = false;
+        var place = city+","+state;
+        var categoryid = document.getElementById("category").selectedIndex;
+        var category = "";
+        if (categoryid!=1 && categoryid!= 0){
+          category = document.getElementById("c_"+categoryid).innerHTML;
+        }
+        var priceid = document.getElementById("price").selectedIndex;
+        var price;
+        if (priceid!=1 && priceid != 0){
+            price = document.getElementById("p_"+priceid).innerHTML;
+        }
+        var keyword = $("#keyword").val();
         bValid = bValid && s_checkRegexp($("#place"),/^([a-z ])+$/i);
-        bValid = bValid && s_checkRegexp($("#state"),/^([a-z])+$/i);
         if (!bValid) {
           $("#results").html("");
-          updateAlerts("Input invalid. Only letters and space for city, only letters for state")}
+          updateAlerts("Input invalid. Check if You filled in both city and state, and the input is correct.")}
         //console.log(placeVal+" "+keyword);
-        else search(place,keyword);
+        else search(place,keyword,category,price,"");
       });
     $("#search").removeClass("ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only");
 
@@ -538,12 +553,21 @@
         authUrl : 'https://foursquare.com/',
         apiUrl : 'https://api.foursquare.com/'
     };
-    function search(place, keyword){
+    function search(place,keyword,category,price,message){
         var success = false;
-        $.getJSON(config.apiUrl + 'v2/venues/explore?near=' + place
-                                + '&query=' + keyword + '&client_id='
-                                + config.apiKey + '&client_secret='
-                                + config.apisecret,
+        var search_query = config.apiUrl + 'v2/venues/explore?near='+place;
+        if (keyword!=null && keyword !=""){
+          search_query += "&query="+keyword;
+        }
+        if (category!=null && category !=""){
+          search_query += "&section="+category;
+        }
+        if (price!=null && price!=""){
+          search_query += "&price="+price;
+        }
+        search_query+="&client_id="+config.apiKey+"&client_secret="+config.apisecret;
+        console.log(search_query);
+        $.getJSON(search_query,
                         //{},
                         function(data) {
                             success = true;
@@ -551,7 +575,11 @@
                             if (data['response']['warning']!=null){
                               updateAlerts(data['response']['warning']['text']);
                             }
-                            else {updateAlerts("Results loaded! Target Place: "+data['response']['headerLocation']+", Key word: "+data['response']['query']);}
+                            else {
+                            if (message == ""){
+                              updateAlerts("Results loaded! Target Place: "+data['response']['headerLocation']+", Key word: "+data['response']['query']);}
+                            else updateAlerts(message);
+                            }
                             venues = data['response']['groups'][0]['items'];
                             if (document.getElementById("results")==null) {
                                 $('#container').append(
@@ -631,6 +659,7 @@
                 tabCounter+=1;
             }
         }
+        search("New York,NY","","","","Check out on the trends near New York");
     }
 
     function updateTips( t ) {
@@ -829,27 +858,97 @@ window.onbeforeunload = confirmOnPageExit;
                 <a class="navbar-brand" href="advanced_calender.html">Trip Planner</a>
             </div>
             <div class="navbar-collapse collapse">
-                <ul class="nav navbar-nav">
-                    <li id="schedules" class="dropdown"></li>
-                </ul>
+        <form class="navbar-form pull-right" style="font-size:14px">
+        <!-- <fieldset class="ui-helper-reset"> -->
+          <input type="text" name="place" id="place" placeholder="*City:" class="searchInput" title="Target City">
+          <select id = "state" name="state" class="searchInput" style="width:70px" size="1" single>
+            <option id ="s_1" value="1" selected>*State</option>
+            <option id ="s_2" value="2">AK</option>
+            <option id ="s_3" value="3">AL</option>
+            <option id ="s_4" value="4">AZ</option>
+            <option id ="s_5" value="5">AR</option>
+            <option id ="s_6" value="6">CA</option>
+            <option id ="s_7" value="7">CO</option>
+            <option id ="s_8" value="8">CT</option>
+            <option id ="s_9" value="9">DE</option>
+            <option id ="s_10" value="10">DC</option>
+            <option id ="s_11" value="11">FL</option>
+            <option id ="s_12" value="12">GA</option>
+            <option id ="s_13" value="13">HI</option>
+            <option id ="s_14" value="14">ID</option>
+            <option id ="s_15" value="15">IL</option>
+            <option id ="s_16" value="16">IN</option>
+            <option id ="s_17" value="17">IA</option>
+            <option id ="s_18" value="18">KS</option>
+            <option id ="s_19" value="19">KY</option>
+            <option id ="s_20" value="20">LA</option>
+            <option id ="s_21" value="21">ME</option>
+            <option id ="s_22" value="22">MD</option>
+            <option id ="s_23" value="23">MA</option>
+            <option id ="s_24" value="24">MI</option>
+            <option id ="s_25" value="25">MN</option>
+            <option id ="s_26" value="26">MS</option>
+            <option id ="s_27" value="27">MO</option>
+            <option id ="s_28" value="28">MT</option>
+            <option id ="s_29" value="29">NB</option>
+            <option id ="s_30" value="30">NV</option>
+            <option id ="s_31" value="31">NH</option>
+            <option id ="s_32" value="32">NJ</option>
+            <option id ="s_33" value="33">NM</option>
+            <option id ="s_34" value="34">NY</option>
+            <option id ="s_35" value="35">NC</option>
+            <option id ="s_36" value="36">ND</option>
+            <option id ="s_37" value="37">OH</option>
+            <option id ="s_38" value="38">OK</option>
+            <option id ="s_39" value="39">OR</option>
+            <option id ="s_40" value="40">PA</option>
+            <option id ="s_41" value="41">PR</option>
+            <option id ="s_42" value="42">RI</option>
+            <option id ="s_43" value="43">SC</option>
+            <option id ="s_44" value="44">SD</option>
+            <option id ="s_45" value="45">TN</option>
+            <option id ="s_46" value="46">TX</option>
+            <option id ="s_47" value="47">UT</option>
+            <option id ="s_48" value="48">VT</option>
+            <option id ="s_49" value="49">VA</option>
+            <option id ="s_50" value="50">VI</option>
+            <option id ="s_51" value="51">WA</option>
+            <option id ="s_52" value="52">WV</option>
+            <option id ="s_53" value="53">WI</option>
+            <option id ="s_54" value="54">WY</option>
+            </select>
+          <select id = "category" name="select" class="searchInput" style="width:95px" size="1" single>
+            <option id="c_1" value="1" selected>Category</option>
+            <option id="c_2" value="2">Food</option>
+            <option id="c_3" value="3" >Drinks</option>
+            <option id="c_4" value="4">Coffee</option>
+            <option id="c_5" value="5">Shops</option>
+            <option id="c_6" value="6">Arts</option>
+            <option id="c_7" value="7">Outdoors</option>
+            <option id="c_8" value="8">Sights</option>
+            <option id="c_9" value="9">Trending</option>
+            <option id="c_10" value="10">Shops</option>
+            </select>
+            <select id = "price" name="price" class="searchInput" style="width:65px" size="1">
+            <option id ="p_1" value="1" selected>Price</option>
+            <option id ="p_2" value="2">1</option>
+            <option id ="p_3" value="3">2</option>
+            <option id ="s_4" value="4">3</option>
+            <option id ="p_5" value="5">4</option>
+            </select>
+          <input name="tab_content" id="keyword" class="searchInput" Placeholder="Keyword:" title="Interested Properties"></intput>
+        <!-- </fieldset> -->
+        <div id="search" class="btn btn-default">search</div>
+        </form>
+
             </div>
         </div>
         <!--/.nav-collapse -->
     </div>
     <!-- Main component for a primary marketing message or call to action -->
     <div id="container" class="jumbotron">
-        <p class="search_alert"></p>
-        <form style="font-size:20px">
-        <fieldset class="ui-helper-reset">
-          <label for="tab_title">City</label>
-          <input type="text" name="place" id="place" value="New York" class="ui-widget-content ui-corner-all" style="display:inline-block" title="Target City">
-          <label for="tab_title">State</label>
-          <input type="text" name="state" id="state" value="NY" class="ui-widget-content ui-corner-all" style="display:inline-block" title="Corresponding State">
-          <label for="tab_date">Key word</label>
-          <input name="tab_content" id="keyword" value="Columbia University" class="ui-widget-content ui-corner-all" title="Interested Properties"></intput>
-        </fieldset>
-        </form>
-         <button id="search" class="btn btn-default">search</button>
+        <p class="search_alert">Current Trends near New York</p>
+        <p style="font-size: 12px;position:fixed;top:15%;left:55%; width=50%"> Drag search results to schedule to create event</p>
         <div id="tabs">
             <ul id="schedule" class="btn-group-vertical" style="float: left;">
             </ul>
