@@ -733,11 +733,11 @@ button.ui-button::-moz-focus-inner {
 	position: fixed;/* position: relative prevents IE scroll bug (element with position: relative inside container with overflow: auto appear as "fixed") */
 	float:right;
 	padding: .2em;
-	right:10%;
+	right:5%;
 	top:20%;
 	height:70%;
-	min-width: 430px;
-	max-width: 50%;
+	min-width: 450px;
+	max-width: 60%;
 	overflow:scroll;
 	overflow-x:hidden; 	
 }

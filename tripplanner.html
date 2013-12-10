@@ -335,7 +335,7 @@
           var newTab = {"id":eventID,"name":label, "time":date,"event_num":0, "event":[]};
           unsavedCalenders['Calenders'].push(newTab);
         $('#schedule').append(
-                            '<li id="tag-'+eventID+'" style="width:130px"><a href="#tabs-'+eventID+'">'+label+' '+date+'</a></li>');
+                            '<li id="tag-'+eventID+'" style="width:150px"><a href="#tabs-'+eventID+'">'+label+' '+date+'</a></li>');
         $("li",$("#schedule")).draggable({
                 cancel: "a.ui-icon", // clicking an icon won't initiate dragging
                 revert: "invalid", // when not dropped, the item will revert back to its initial position
@@ -508,7 +508,7 @@
       width: 350,
       modal: true,
       buttons: {
-        "Add to Calender": function() {
+        "Add to Schedule": function() {
             var bValid = true;
             bValid = bValid && checkRegexp(fromHour,/^([0-9])+$/,"Only Numeric input is allowed for Time");
             bValid = bValid && checkRegexp(fromMinute,/^([0-9])+$/,"Only Numeric input is allowed for Time");
@@ -735,7 +735,7 @@
         console.log("Current schedule is "+localStorage.getItem(calenderList['Calenders'][i]));
         var label = newTab['name'];
         $('#schedule').append(
-                            '<li id="tag-'+tabid+'" style="width:130px" ondblclick="EditCalender()"><a href="#tabs-'+tabid+'">'+label+' '+newTab['time']+'</a></li>');
+                            '<li id="tag-'+tabid+'" style="width:150px" ondblclick="EditCalender()"><a href="#tabs-'+tabid+'">'+label+' '+newTab['time']+'</a></li>');
         $("li",$("#schedule")).draggable({
                 cancel: "a.ui-icon", // clicking an icon won't initiate dragging
                 revert: "invalid", // when not dropped, the item will revert back to its initial position
@@ -1011,7 +1011,7 @@ window.onbeforeunload = confirmOnPageExit;
     <!-- Main component for a primary marketing message or call to action -->
     <div id="container" class="jumbotron">
         <p class="search_alert">Current Trends near New York</p>
-        <p style="font-size: 12px;position:fixed;top:15%;left:55%; width=50%"> Drag search results to schedule to create event</p>
+        <p style="font-size: 12px;position:fixed;top:15%;left:60%; width=50%"> Drag search results to schedule to create event</p>
         <div id="tabs">
             <ul id="schedule" class="btn-group-vertical" style="float: left;">
             </ul>
