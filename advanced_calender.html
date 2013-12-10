@@ -185,6 +185,22 @@
         form[ 0 ].reset();
       }
     });
+
+    $( "#editCalendar" ).dialog({
+      autoOpen: false,
+      modal: true,
+      buttons: {
+        Done: function() {
+          editTab();
+        },
+        Cancel: function() {
+          $( this ).dialog( "close" );
+        }
+      },
+      close: function() {
+        form[ 0 ].reset();
+      }
+    });
  
     // addTab form: calls addTab function on submit and closes the dialog
     var form = dialog.find( "form" ).submit(function( event ) {
@@ -193,7 +209,7 @@
       event.preventDefault();
     });
 
-     $( "#create" )
+    $( "#create" )
       .button()
       .click(function() {
         dialog.dialog( "open" );
@@ -235,6 +251,47 @@
         else search(place,keyword,category,price,"");
       });
     $("#search").removeClass("ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only");
+
+    $( "#edit" )
+      .button()
+      .click(function() {
+        var panelId = $("#tabs").find(".ui-tabs-active").attr("aria-controls");
+        var temp = getObjects(unsavedCalenders["Calenders"],"name",$("#tabs").find(".ui-tabs-active").attr('id'));
+        console.log($("#tabs").find(".ui-tabs-active").attr('id'));
+        console.log(temp[0]['name']);
+        $("#e_title").val(temp[0]['name']);
+        $("#e_datepicker").val(temp[0]['time']);
+        $("#editCalendar").dialog("open");
+      });
+    $("#edit").removeClass("ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only");
+
+    function editTab(){
+      var panelId = $("#tabs").find(".ui-tabs-active").attr("aria-controls");
+      var temp = getObjects(unsavedCalenders["Calenders"],"name",$("#tabs").find(".ui-tabs-active").attr('id'));
+      var bValid = true;
+      bValid = bValid && checkLength($("#e_title"),"schedule name",1,8);
+      bValid = bValid && checkRegexp($("#e_title"),/^[a-z]([0-9a-z_])+$/i,"Schedule name illegal");
+      var tester = getObjects(unsavedCalenders["Calenders"],"name",$("#e_title").val());
+      if (tester[0]==temp[0] && tester.length >= 1){
+        bValid = bValid && true;
+      }
+      else if (tester.length!=0){
+          bValid = false;
+          updateTips("Schedule name already exist.");
+      }
+      console.log("New Schedule name is "+tabTitle.val()+" Validation of this name is "+bValid);
+        if (bValid){
+        var label = $("#e_title").val();
+        var date = $("#e_datepicker").val();
+        temp[0]['name'] = label;
+        temp[0]['time'] = date;
+        console.log(unsavedCalenders);
+        var item = $("#tabs").find(".ui-tabs-active");
+        item.text(label+" "+date);
+        $( "#editCalendar" ).dialog("close");
+      }
+      
+    }
 
     $( "#save" )
       .button()
@@ -286,7 +343,7 @@
         unsavedCalenders['Calenders'].push(newTab);
         //console.log(unsavedCalenders);
         $('#schedule').append(
-                            '<li id="'+label+'" style="width:40px"><a href="#tabs-'+label+'">'+label+'</a></li>');
+                            '<li id="'+label+'" style="width:130px"><a href="#tabs-'+label+'">'+label+' '+date+'</a></li>');
         $("li",$("#schedule")).draggable({
                 cancel: "a.ui-icon", // clicking an icon won't initiate dragging
                 revert: "invalid", // when not dropped, the item will revert back to its initial position
@@ -677,8 +734,13 @@
                 .addClass( "ui-state-highlight" );
               setTimeout(function() {
                  $( ".search_alert"  ).removeClass( "ui-state-highlight", 1500 );
-              }, 500 );
+           
+               }, 500 );
         }
+
+    function EditCalender(){
+      console.log("Double Clicked!");
+    }
 
     function drawTab(newTab,tabid) {
         console.log("Drawing schedule event for schedule "+tabid);
@@ -686,7 +748,7 @@
         var label = newTab['name']||"newSchedule-"+i,
         id = "tag-"+i;
         $('#schedule').append(
-                            '<li id="'+tabid+'" style="width:40px"><a href="#tabs-'+tabid+'">'+label+'</a></li>');
+                            '<li id="'+tabid+'" style="width:130px" ondblclick="EditCalender()"><a href="#tabs-'+tabid+'">'+label+' '+newTab['time']+'</a></li>');
         $("li",$("#schedule")).draggable({
                 cancel: "a.ui-icon", // clicking an icon won't initiate dragging
                 revert: "invalid", // when not dropped, the item will revert back to its initial position
@@ -834,7 +896,7 @@ window.onbeforeunload = confirmOnPageExit;
         </form>
       </div>
 
-      <div id="createCalendar" title="Creating new Schedule">
+      <div id="createCalendar" title="Creating New Schedule">
           <form>
             <fieldset class="ui-helper-reset">
               <p class="validateTips"> </p>
@@ -845,7 +907,20 @@ window.onbeforeunload = confirmOnPageExit;
               <input type="text" name="datepicker" readonly="true" onmousedown="return true" id="datepicker" class="ui-widget-content ui-corner-all">
             </fieldset>
           </form>
-       </div>
+      </div>
+
+      <div id="editCalendar" title="Edit Selected Schedule">
+          <form>
+            <fieldset class="ui-helper-reset">
+              <p class="validateTips"> </p>
+              <p>Choose date by clicking the input area</p>
+              <label for="tab_title">Title</label>
+              <input type="text" name="etitle" id="e_title" value="" class="ui-widget-content ui-corner-all" title="Schedule name may consist of a-z, 0-9, underscores, begin with a letter, within length of 1 to 8">
+              <label for="tab_date">Date</label>
+              <input type="text" name="datepicker" readonly="true" onmousedown="return true" id="e_datepicker" class="ui-widget-content ui-corner-all">
+            </fieldset>
+          </form>
+      </div>
     <div class="navbar navbar-default navbar-fixed-top" role="navigation">
         <div class="container">
             <div class="navbar-header">
@@ -954,6 +1029,7 @@ window.onbeforeunload = confirmOnPageExit;
             </ul>
         </div>
         <div class="btn-group" style="position:fixed;top:90%;right:10%;">
+            <button id="edit" type="button" title="Edit Selected Schedule"class="btn btn-default">Edit</button>
             <button id="save" type="button" class="btn btn-default" title="Save only selected schedule">Save</button>
             <button id="create" type="button" class="btn btn-default">Create Schedule</button>
             <div id="delete" name="delete" style="width:80px;height:34px;padding:0px; text-align: center;" class="btn btn-default" title="Drag event or Schedule tab to here to delete"><p style="position:absolute;top:7px; left:16px">Delete</p></div>
