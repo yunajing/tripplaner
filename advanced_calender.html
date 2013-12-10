@@ -106,8 +106,8 @@
         console.log(panelId);
         $("#"+panelId).remove();
         $("#tabs").tabs( "refresh" );
-        var k = findDuplicate(calenderList["Calenders"],itemid);
-        var k2 = removeObjects(unsavedCalenders["Calenders"],"name",itemid);
+        var k = findDuplicate(calenderList["Calenders"],itemid.substr(4,itemid.length));
+        var k2 = removeObjects(unsavedCalenders["Calenders"],"id",itemid.substr(4,itemid.length));
         unsavedCalenders['Calenders'].splice(k2,1);
         if ( k != -1){
           calenderList["Calenders"].splice(k,1);
@@ -119,14 +119,15 @@
         $("#tabs").tabs("refresh");
       }
       else if ($item.attr('id').substr(0,6)=="delete"){
-        var scheduleid = $('#tabs').find(".ui-tabs-active").attr("id");
+        var tid = $('#tabs').find(".ui-tabs-active").attr("id");
+        var scheduleid = tid.substr(4,tid.length);
         console.log("Deleting event from schedule "+scheduleid);
         var k = findDuplicate(calenderList["Calenders"],scheduleid);
-        var k2 = removeObjects(unsavedCalenders["Calenders"],"name",scheduleid);
+        var k2 = removeObjects(unsavedCalenders["Calenders"],"id",scheduleid);
         var eventid = removeObjects(unsavedCalenders["Calenders"][k2]["event"],"event-id",itemid.substr(7,itemid.length));
         unsavedCalenders["Calenders"][k2]["event"].splice(eventid,1);
         if (k!=-1){
-          var tempSchedule = getObjects(unsavedCalenders["Calenders"],"name",scheduleid);
+          var tempSchedule = getObjects(unsavedCalenders["Calenders"],"id",scheduleid);
           localStorage.setItem(scheduleid,JSON.stringify(tempSchedule[0]));
         }
         $("#information").text("Event already deleted!");
@@ -185,6 +186,22 @@
         form[ 0 ].reset();
       }
     });
+
+    $( "#editCalendar" ).dialog({
+      autoOpen: false,
+      modal: true,
+      buttons: {
+        Done: function() {
+          editTab();
+        },
+        Cancel: function() {
+          $( this ).dialog( "close" );
+        }
+      },
+      close: function() {
+        form[ 0 ].reset();
+      }
+    });
  
     // addTab form: calls addTab function on submit and closes the dialog
     var form = dialog.find( "form" ).submit(function( event ) {
@@ -193,7 +210,7 @@
       event.preventDefault();
     });
 
-     $( "#create" )
+    $( "#create" )
       .button()
       .click(function() {
         dialog.dialog( "open" );
@@ -235,6 +252,42 @@
         else search(place,keyword,category,price,"");
       });
     $("#search").removeClass("ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only");
+    $("#e_datepicker").datepicker();
+
+    $( "#edit" )
+      .button()
+      .click(function() {
+        var panelId = $("#tabs").find(".ui-tabs-active").attr("aria-controls");
+        var tabId = $("#tabs").find(".ui-tabs-active").attr('id').substr(4,$("#tabs").find(".ui-tabs-active").attr('id').length);
+        var temp = getObjects(unsavedCalenders["Calenders"],"id",tabId);
+        console.log($("#tabs").find(".ui-tabs-active").attr('id'));
+        console.log(temp[0]['name']);
+        $("#e_title").val(temp[0]['name']);
+        $("#e_datepicker").val(temp[0]['time']);
+        $("#editCalendar").dialog("open");
+      });
+    $("#edit").removeClass("ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only");
+
+    function editTab(){
+      var panelId = $("#tabs").find(".ui-tabs-active").attr("aria-controls");
+      var tabid = $("#tabs").find(".ui-tabs-active").attr('id').substr(4,$("#tabs").find(".ui-tabs-active").attr('id').length);
+      var temp = getObjects(unsavedCalenders["Calenders"],"id",tabid);
+      var bValid = true;
+      bValid = bValid && checkLength($("#e_title"),"schedule name",1,8);
+      console.log("New Schedule name is "+tabTitle.val()+" Validation of this name is "+bValid);
+        if (bValid){
+        var label = $("#e_title").val();
+        var date = $("#e_datepicker").val();
+        temp[0]['name'] = label;
+        temp[0]['time'] = date;
+        console.log(unsavedCalenders);
+        var item = $("#tabs").find(".ui-tabs-active");
+        item.html('<a href="#tabs-'+temp[0]['id']+'">'+label+' '+date+'</a>');
+        $( "#editCalendar" ).dialog("close");
+        $("#tabs").tabs("refresh");
+      }
+      
+    }
 
     $( "#save" )
       .button()
@@ -244,21 +297,22 @@
         var panelId = tabs.find(".ui-tabs-active").attr("aria-controls");
         console.log("You are trying to save schedule "+panelId);
         console.log("The active tab is "+tabs.find(".ui-tabs-active").attr('id'));
-        var temp = getObjects(unsavedCalenders["Calenders"],"name",tabs.find(".ui-tabs-active").attr('id'));
-        var temp2 = findDuplicate(calenderList["Calenders"],tabs.find(".ui-tabs-active").attr('id'));
+        var tabid = tabs.find(".ui-tabs-active").attr('id').substr(4,tabs.find(".ui-tabs-active").attr('id').length);
+        var temp = getObjects(unsavedCalenders["Calenders"],"id",tabid);
+        var temp2 = findDuplicate(calenderList["Calenders"],tabid);
         if (temp.length >=1 && temp2<0){
           $("#information").text("Schedule "+tabs.find(".ui-tabs-active").attr('id')+" Saved!");
           $("#informationbox").dialog("open");
-          calenderList['Calenders'].push(tabs.find(".ui-tabs-active").attr('id'));
+          calenderList['Calenders'].push(tabid);
           localStorage.setItem('Calenders',JSON.stringify(calenderList));
-          localStorage.setItem(tabs.find(".ui-tabs-active").attr('id'),JSON.stringify(temp[0]));
+          localStorage.setItem(tabid,JSON.stringify(temp[0]));
           console.log("Schedule saved");
           console.log(unsavedCalenders);
         }
         if (temp.length >=1 && temp2>=0){
           $("#information").text("Schedule "+tabs.find(".ui-tabs-active").attr('id')+" Saved!");
           $("#informationbox").dialog("open");
-          localStorage.setItem(tabs.find(".ui-tabs-active").attr('id'),JSON.stringify(temp[0]));
+          localStorage.setItem(tabid,JSON.stringify(temp[0]));
           console.log("Schedule saved");
           console.log(unsavedCalenders);
         }
@@ -268,33 +322,26 @@
  
     // actual addTab function: adds new tab using the input from the form above
     function addTab() {
+        var eventID = new Date().getTime();
         var bValid = true;
-        bValid = bValid && checkLength(tabTitle,"schedule name",1,8);
-        bValid = bValid && checkRegexp(tabTitle,/^[a-z]([0-9a-z_])+$/i,"Schedule name illegal");
-        var tester = getObjects(unsavedCalenders["Calenders"],"name",tabTitle.val());
-        console.log("Found "+tester.length+" match");
-        if (tester.length > 0) {
-          bValid = false;
-          updateTips("Schedule name already exist.");
-        }
+        bValid = bValid && checkLength(tabTitle,"schedule name",0,10);
         console.log("New Schedule name is "+tabTitle.val()+" Validation of this name is "+bValid);
         if (bValid){
-        var label = tabTitle.val();
-        var date = tabDate.val();
-        console.log("New Schedule called "+label+". Selected date is "+date);
-        var newTab = {"name":label, "time":date,"event_num":0, "event":[]};
-        unsavedCalenders['Calenders'].push(newTab);
-        //console.log(unsavedCalenders);
+          var label = tabTitle.val();
+          var date = tabDate.val();
+          console.log("New Schedule called "+label+". Selected date is "+date);
+          var newTab = {"id":eventID,"name":label, "time":date,"event_num":0, "event":[]};
+          unsavedCalenders['Calenders'].push(newTab);
         $('#schedule').append(
-                            '<li id="'+label+'" style="width:40px"><a href="#tabs-'+label+'">'+label+'</a></li>');
+                            '<li id="tag-'+eventID+'" style="width:130px"><a href="#tabs-'+eventID+'">'+label+' '+date+'</a></li>');
         $("li",$("#schedule")).draggable({
                 cancel: "a.ui-icon", // clicking an icon won't initiate dragging
                 revert: "invalid", // when not dropped, the item will revert back to its initial position
                 containment: "document",
                 helper: "clone",
         });
-        var tabid = "#tabs-" + label;
-        tabpanel='<div id="tabs-'+label+'">'+calendertemplate;
+        var tabid = "#tabs-" + eventID;
+        tabpanel='<div id="tabs-'+eventID+'">'+calendertemplate;
         $("#tabs").append(tabpanel);
         $(tabid).droppable(
                     {
@@ -318,7 +365,7 @@
                                 vid= $(this).attr('id');
                                 //console.log(vid);
                                 $( "#dialog-form" ).dialog( "open" );
-                                $( "#calenderName").html('<p id= "calenderName" class="validateTips">Adding to Schedule:'+vid.substr(0,vid.length-4)+'</p>');
+                                $( "#calenderName").html('<p id= "calenderName" class="validateTips">Adding to Schedule:'+vid+'</p>');
                                 document.getElementById('body').style.overflow="hidden";
                     }
                 }
@@ -416,10 +463,10 @@
                 updateTips("Eding Time is prior to Starting Time");
             }
             if (bValid) {
-                var scheduleid = $('#tabs').find(".ui-tabs-active").attr("id");
+                var scheduleid = $('#tabs').find(".ui-tabs-active").attr("id").substr(4,$('#tabs').find(".ui-tabs-active").attr("id").length);
                     console.log("Modifying event from schedule "+scheduleid);
                     var k = findDuplicate(calenderList["Calenders"],scheduleid);
-                    var k2 = removeObjects(unsavedCalenders["Calenders"],"name",scheduleid);
+                    var k2 = removeObjects(unsavedCalenders["Calenders"],"id",scheduleid);
                     var eventid = removeObjects(unsavedCalenders["Calenders"][k2]["event"],"event-id",selectedEvent.id.substr(7,selectedEvent.id.length));
                     unsavedCalenders["Calenders"][k2]["event"][eventid]["fromHour"] = $("#m_fromHour").val();
                     unsavedCalenders["Calenders"][k2]["event"][eventid]["fromMinute"]= $("#m_fromMinute").val();
@@ -480,17 +527,16 @@
                 updateTips("Eding Time is prior to Starting Time");
             }
             if (bValid) {
-                var newEvent = {"event-id":"","fromHour": fromHour.val(), "fromMinute": fromMinute.val(), "toHour": toHour.val(), "toMinute": toMinute.val(), "comment":comment.val(),"placeURL":clone.href,"placeName":clone.innerHTML};
+                var eventId = new Date().getTime();
+                var newEvent = {"event-id":eventId,"fromHour": fromHour.val(), "fromMinute": fromMinute.val(), "toHour": toHour.val(), "toMinute": toMinute.val(), "comment":comment.val(),"placeURL":clone.href,"placeName":clone.innerHTML};
                 var vid = $("#tabs").find(".ui-tabs-active").attr("aria-controls");
+                var tabid = $("#tabs").find(".ui-tabs-active").attr("id").substr(4,$("#tabs").find(".ui-tabs-active").attr("id").length);
                 console.log("You are now adding to schedule "+vid);
-                var a = getObjects(unsavedCalenders["Calenders"],"name",$("#tabs").find(".ui-tabs-active").attr("id"));
+                var a = getObjects(unsavedCalenders["Calenders"],"id",tabid);
                 var tempLength = 0;
-                var eventId;
                 if (a.length >= 1) {
                   a[0]["event_num"]+=1;
                   tempLength = a[0]['event_num'];
-                  eventId = vid+"-"+tempLength;
-                  newEvent["event-id"]=eventId;
                   a[0]["event"].push(newEvent);
                   console.log("Event added! Updated list shown below");
                   console.log(unsavedCalenders);
@@ -510,7 +556,7 @@
                     var scheduleid = $('#tabs').find(".ui-tabs-active").attr("id");
                     console.log("Adding event to schedule "+scheduleid);
                     var k = findDuplicate(calenderList["Calenders"],scheduleid);
-                    var k2 = removeObjects(unsavedCalenders["Calenders"],"name",scheduleid);
+                    var k2 = removeObjects(unsavedCalenders["Calenders"],"id",tabid);
                     var eventid = removeObjects(unsavedCalenders["Calenders"][k2]["event"],"event-id",this.id.substr(7,this.id.length));
                     if (eventid!=-1){
                         $("#m_fromHour").val(unsavedCalenders["Calenders"][k2]["event"][eventid]["fromHour"]);
@@ -677,16 +723,16 @@
                 .addClass( "ui-state-highlight" );
               setTimeout(function() {
                  $( ".search_alert"  ).removeClass( "ui-state-highlight", 1500 );
-              }, 500 );
-        }
+           
+               }, 500 );
+    }
 
     function drawTab(newTab,tabid) {
         console.log("Drawing schedule event for schedule "+tabid);
         console.log("Current schedule is "+localStorage.getItem(calenderList['Calenders'][i]));
-        var label = newTab['name']||"newSchedule-"+i,
-        id = "tag-"+i;
+        var label = newTab['name'];
         $('#schedule').append(
-                            '<li id="'+tabid+'" style="width:40px"><a href="#tabs-'+tabid+'">'+label+'</a></li>');
+                            '<li id="tag-'+tabid+'" style="width:130px" ondblclick="EditCalender()"><a href="#tabs-'+tabid+'">'+label+' '+newTab['time']+'</a></li>');
         $("li",$("#schedule")).draggable({
                 cancel: "a.ui-icon", // clicking an icon won't initiate dragging
                 revert: "invalid", // when not dropped, the item will revert back to its initial position
@@ -741,8 +787,8 @@
                     console.log(this);
                     var scheduleid = $('#tabs').find(".ui-tabs-active").attr("id");
                     console.log("Deleting event from schedule "+scheduleid);
-                    var k = findDuplicate(calenderList["Calenders"],scheduleid);
-                    var k2 = removeObjects(unsavedCalenders["Calenders"],"name",scheduleid);
+                    var k = findDuplicate(calenderList["Calenders"],scheduleid.substr(4,scheduleid.length));
+                    var k2 = removeObjects(unsavedCalenders["Calenders"],"id",scheduleid.substr(4,scheduleid.length));
                     var eventid = removeObjects(unsavedCalenders["Calenders"][k2]["event"],"event-id",this.id.substr(7,this.id.length));
                     if (eventid!=-1){
                         $("#m_fromHour").val(unsavedCalenders["Calenders"][k2]["event"][eventid]["fromHour"]);
@@ -834,7 +880,7 @@ window.onbeforeunload = confirmOnPageExit;
         </form>
       </div>
 
-      <div id="createCalendar" title="Creating new Schedule">
+      <div id="createCalendar" title="Creating New Schedule">
           <form>
             <fieldset class="ui-helper-reset">
               <p class="validateTips"> </p>
@@ -845,7 +891,20 @@ window.onbeforeunload = confirmOnPageExit;
               <input type="text" name="datepicker" readonly="true" onmousedown="return true" id="datepicker" class="ui-widget-content ui-corner-all">
             </fieldset>
           </form>
-       </div>
+      </div>
+
+      <div id="editCalendar" title="Edit Selected Schedule">
+          <form>
+            <fieldset class="ui-helper-reset">
+              <p class="validateTips"> </p>
+              <p>Choose date by clicking the input area</p>
+              <label for="tab_title">Title</label>
+              <input type="text" name="etitle" id="e_title" value="" class="ui-widget-content ui-corner-all" title="Schedule name may consist of a-z, 0-9, underscores, begin with a letter, within length of 1 to 8">
+              <label for="tab_date">Date</label>
+              <input type="text" name="e_datepicker" readonly="true" onmousedown="return true" id="e_datepicker" class="ui-widget-content ui-corner-all">
+            </fieldset>
+          </form>
+      </div>
     <div class="navbar navbar-default navbar-fixed-top" role="navigation">
         <div class="container">
             <div class="navbar-header">
@@ -954,6 +1013,7 @@ window.onbeforeunload = confirmOnPageExit;
             </ul>
         </div>
         <div class="btn-group" style="position:fixed;top:90%;right:10%;">
+            <button id="edit" type="button" title="Edit Selected Schedule"class="btn btn-default">Edit</button>
             <button id="save" type="button" class="btn btn-default" title="Save only selected schedule">Save</button>
             <button id="create" type="button" class="btn btn-default">Create Schedule</button>
             <div id="delete" name="delete" style="width:80px;height:34px;padding:0px; text-align: center;" class="btn btn-default" title="Drag event or Schedule tab to here to delete"><p style="position:absolute;top:7px; left:16px">Delete</p></div>
