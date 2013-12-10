@@ -233,12 +233,12 @@
         }
         else bValid = false;
         var place = city+","+state;
-        var categoryid = document.getElementById("category").selectedIndex;
+        var categoryid = document.getElementById("category").selectedIndex+1;
         var category = "";
         if (categoryid!=1 && categoryid!= 0){
           category = document.getElementById("c_"+categoryid).innerHTML;
         }
-        var priceid = document.getElementById("price").selectedIndex;
+        var priceid = document.getElementById("price").selectedIndex+1;
         var price;
         if (priceid!=1 && priceid != 0){
             price = document.getElementById("p_"+priceid).innerHTML;
@@ -1007,7 +1007,7 @@ window.onbeforeunload = confirmOnPageExit;
     <!-- Main component for a primary marketing message or call to action -->
     <div id="container" class="jumbotron">
         <p class="search_alert">Current Trends near New York</p>
-        <p style="font-size: 12px;position:fixed;top:20%;left:55%; width=50%"> Drag search results to schedule to create event</p>
+        <p style="font-size: 12px;position:fixed;top:15%;left:55%; width=50%"> Drag search results to schedule to create event</p>
         <div id="tabs">
             <ul id="schedule" class="btn-group-vertical" style="float: left;">
             </ul>
